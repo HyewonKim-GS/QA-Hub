@@ -756,7 +756,7 @@ html,body{height:100%;overflow:hidden;font-family:'Pretendard',-apple-system,san
         <div style="padding:16px 20px 0">
           <div class="sec-hd">
             <span class="sec-t">슬롯 일정 타임라인</span>
-            <span class="see-all">전체 보기 →</span>
+            <span class="see-all" onclick="showPage('schedule',document.querySelectorAll('.nav')[3])">전체 보기 →</span>
           </div>
         </div>
         <div class="tl-head">
@@ -3227,6 +3227,7 @@ async function _giRenderCard(entry){
         if(isSB) return i.is_sb===true;
         return i.is_sb!==true;
       });
+      bugs.sort((a,b)=>(a.created||a.updated||'').localeCompare(b.created||b.updated||''));
       _giCardState[safeKey].bugs=bugs;
       function sevInfo(p){const s=_sevInfo(p);return{label:s.label,cls:s.col==='#ef4444'?'var(--red)':s.col==='#f59e0b'?'var(--amber)':'var(--t3)',bg:s.bg,bd:s.bd};}
       function stCategory(st){
