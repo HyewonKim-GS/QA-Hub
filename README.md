@@ -16,6 +16,7 @@ Game Studio QA팀 전용 통합 검색 및 어시스턴트 도구
 - Python 3.9 / FastAPI / Uvicorn
 - 데이터 소스: Jira, Confluence, Google Drive, Slack, gs-os-ontology MCP
 - GPT-4o-mini (채팅 의도 분류 및 응답 생성)
+- repob CLI — 사내 games 레포에서 게임 브랜치 및 코드 참조 조회 (Hub AI 컨텍스트 보강)
 
 ## 실행 방법
 
@@ -25,13 +26,22 @@ pip install -r requirements.txt
 
 # 환경변수 설정
 cp .env.example .env
-# .env에 ATLASSIAN_DOMAIN, ATLASSIAN_EMAIL, ATLASSIAN_API_TOKEN, JIRA_PROJECT, OPENAI_API_KEY 입력
+# .env에 아래 값 입력
+# ATLASSIAN_DOMAIN, ATLASSIAN_EMAIL, ATLASSIAN_API_TOKEN, JIRA_PROJECT, OPENAI_API_KEY
 
 # 서버 실행
 .venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000 --log-level warning
 ```
 
 서버 시작 시 Jira·Confluence 데이터를 자동으로 캐시하며, 이후 1시간마다 자동 갱신됩니다.
+
+## 의존성
+
+### MCP 서버 (gs-os-ontology)
+Google Drive 및 게임 온톨로지 조회에 사용. SSE 방식으로 `http://172.16.50.144:3100`에 연결합니다. 사내 네트워크(VPN) 필요.
+
+### repob CLI
+Hub AI가 게임 관련 질문에 답할 때 사내 games 레포의 코드를 참조하는 데 사용합니다. 별도 설치 필요 — 설치되지 않은 경우 코드 참조 기능만 비활성화되며 나머지 기능은 정상 동작합니다.
 
 ## API
 
