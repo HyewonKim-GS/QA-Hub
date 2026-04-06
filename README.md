@@ -28,6 +28,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # .env에 아래 값 입력
 # ATLASSIAN_DOMAIN, ATLASSIAN_EMAIL, ATLASSIAN_API_TOKEN, JIRA_PROJECT, OPENAI_API_KEY
+# OPENAI_API_KEY 미설정 시 Hub AI 채팅 기능만 비활성화되며 나머지 기능은 정상 동작
 
 # 서버 실행
 .venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000 --log-level warning
