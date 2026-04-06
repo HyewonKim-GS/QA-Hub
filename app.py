@@ -39,141 +39,6 @@ from search import (
     call_mcp_tool,
 )
 
-# ── Demo Mode ─────────────────────────────────────────────────────────────────
-# Atlassian 토큰이 없으면 자동으로 데모 모드. 샘플 데이터로 UI를 표시한다.
-_DEMO_MODE: bool = not bool(os.getenv("ATLASSIAN_API_TOKEN"))
-
-
-def _make_demo_jira() -> List[Dict]:
-    """데모용 샘플 Jira 이슈 생성. 날짜를 오늘 기준으로 동적 생성."""
-    _today = date.today()
-    _mon = _today - timedelta(days=_today.weekday())  # 이번 주 월요일
-
-    def d(delta: int) -> str:
-        return (_today - timedelta(days=delta)).isoformat()
-
-    def dw(delta: int) -> str:
-        return (_mon + timedelta(days=delta)).isoformat()
-
-    _domain = os.getenv("ATLASSIAN_DOMAIN", "example.atlassian.net")
-    _base = f"https://{_domain}/browse"
-
-    issues = [
-        # 이번 주 버그 (weekly_bugs에 표시됨)
-        {"key": "GS-1001", "summary": "Dragon Fortune — 프리스핀 중 앱 크래시 발생", "status": "진행 중",
-         "type": "Bug", "priority": "주요", "assignee": "김민준", "updated": dw(1), "created": dw(1),
-         "resolved": None, "game": "Dragon Fortune", "is_sb": False,
-         "description": "프리스핀 10회 트리거 후 5회째 스핀에서 강제 종료됨. iOS 17.4 재현율 100%.",
-         "_desc_full": "프리스핀 중 앱 크래시 dragon fortune ios crash", "url": f"{_base}/GS-1001"},
-        {"key": "GS-1002", "summary": "Lucky Gems — 잭팟 연출 BGM이 루프되지 않음", "status": "열림",
-         "type": "Bug", "priority": "Medium", "assignee": "이서연", "updated": dw(0), "created": dw(0),
-         "resolved": None, "game": "Lucky Gems", "is_sb": False,
-         "description": "잭팟 당첨 후 연출 BGM이 한 번 재생되고 멈춤. 루프 설정 누락 추정.",
-         "_desc_full": "잭팟 bgm 사운드 lucky gems jackpot sound", "url": f"{_base}/GS-1002"},
-        {"key": "GS-1003", "summary": "Gold Rush — 베팅 한도 초과 시 에러 메시지 미표시", "status": "열림",
-         "type": "Bug", "priority": "사소", "assignee": "박지호", "updated": dw(2), "created": dw(2),
-         "resolved": None, "game": "Gold Rush", "is_sb": False,
-         "description": "최대 베팅 초과 입력 시 UI 에러 없이 이전 값으로 리셋됨.",
-         "_desc_full": "베팅 한도 에러 gold rush bet limit", "url": f"{_base}/GS-1003"},
-        {"key": "GS-1004", "summary": "Phoenix Rise — 슈퍼보너스 릴 애니메이션 끊김", "status": "진행 중",
-         "type": "Bug", "priority": "주요", "assignee": "최유진", "updated": dw(1), "created": dw(1),
-         "resolved": None, "game": "Phoenix Rise", "is_sb": True,
-         "description": "Super Bonus 진입 후 릴 스핀 시 1~2프레임 드롭 발생. Galaxy S24 기준.",
-         "_desc_full": "슈퍼보너스 릴 애니메이션 phoenix rise super bonus", "url": f"{_base}/GS-1004"},
-        {"key": "GS-1005", "summary": "Aztec Treasure — 누적 잭팟 금액 실시간 업데이트 안 됨", "status": "완료",
-         "type": "Bug", "priority": "Medium", "assignee": "이서연", "updated": dw(0), "created": dw(0),
-         "resolved": dw(0), "game": "Aztec Treasure", "is_sb": False,
-         "description": "잭팟 금액이 30초마다 갱신되어야 하나 페이지 새로고침 전까지 고정됨.",
-         "_desc_full": "잭팟 누적 업데이트 aztec treasure jackpot", "url": f"{_base}/GS-1005"},
-        # 지난 주 이슈
-        {"key": "GS-0991", "summary": "Dragon Fortune — 무료 스핀 횟수 카운터 오류", "status": "완료",
-         "type": "Bug", "priority": "주요", "assignee": "김민준", "updated": d(5), "created": d(8),
-         "resolved": d(5), "game": "Dragon Fortune", "is_sb": False,
-         "description": "무료 스핀 잔여 횟수가 1 적게 표시되는 오프바이원 버그.",
-         "_desc_full": "무료 스핀 카운터 dragon fortune free spin off-by-one", "url": f"{_base}/GS-0991"},
-        {"key": "GS-0992", "summary": "Lucky Gems — 와일드 심볼 배당 계산 오류", "status": "완료",
-         "type": "Bug", "priority": "주요", "assignee": "박지호", "updated": d(6), "created": d(9),
-         "resolved": d(6), "game": "Lucky Gems", "is_sb": False,
-         "description": "와일드 2개 포함 콤보에서 배당이 기획서 대비 50% 낮게 지급됨.",
-         "_desc_full": "와일드 배당 계산 lucky gems wild payout", "url": f"{_base}/GS-0992"},
-        {"key": "GS-0985", "summary": "Gold Rush — 로딩 화면 스피너 무한 루프", "status": "완료",
-         "type": "Bug", "priority": "Medium", "assignee": "최유진", "updated": d(10), "created": d(12),
-         "resolved": d(10), "game": "Gold Rush", "is_sb": False,
-         "description": "네트워크 재연결 후 로딩 스피너가 해제되지 않아 게임 진입 불가.",
-         "_desc_full": "로딩 스피너 무한 루프 gold rush loading", "url": f"{_base}/GS-0985"},
-        {"key": "GS-0980", "summary": "Phoenix Rise — 사운드 설정 초기화 버그", "status": "완료",
-         "type": "Bug", "priority": "사소", "assignee": "이서연", "updated": d(14), "created": d(15),
-         "resolved": d(14), "game": "Phoenix Rise", "is_sb": False,
-         "description": "게임 재진입 시 이전 사운드 on/off 설정이 초기화됨.",
-         "_desc_full": "사운드 설정 초기화 phoenix rise sound reset", "url": f"{_base}/GS-0980"},
-        # 태스크/스토리
-        {"key": "GS-0970", "summary": "Dragon Fortune v2.1 QA 계획서 작성", "status": "완료",
-         "type": "Task", "priority": "Medium", "assignee": "김민준", "updated": d(20), "created": d(22),
-         "resolved": d(20), "game": "Dragon Fortune", "is_sb": False,
-         "description": "v2.1 신규 피처(프리스핀 멀티플라이어) 대상 TC 초안 작성.",
-         "_desc_full": "qa 계획서 tc dragon fortune v2.1", "url": f"{_base}/GS-0970"},
-        {"key": "GS-0960", "summary": "Lucky Gems 릴리즈 리포트 작성", "status": "완료",
-         "type": "Task", "priority": "Medium", "assignee": "이서연", "updated": d(25), "created": d(26),
-         "resolved": d(25), "game": "Lucky Gems", "is_sb": False,
-         "description": "1.3.0 릴리즈 QA 완료 리포트 Confluence 업로드.",
-         "_desc_full": "릴리즈 리포트 lucky gems release report confluence", "url": f"{_base}/GS-0960"},
-        {"key": "GS-0950", "summary": "Aztec Treasure 회귀 테스트 완료", "status": "진행 중",
-         "type": "Story", "priority": "Medium", "assignee": "박지호", "updated": d(3), "created": d(7),
-         "resolved": None, "game": "Aztec Treasure", "is_sb": False,
-         "description": "2.0.0 회귀 TC 전체 항목 검증 진행 중. 잔여 30%.",
-         "_desc_full": "회귀 테스트 aztec treasure regression test", "url": f"{_base}/GS-0950"},
-        {"key": "GS-0940", "summary": "Gold Rush — 어드민 강제종료 기능 검증", "status": "완료",
-         "type": "Task", "priority": "사소", "assignee": "최유진", "updated": d(18), "created": d(20),
-         "resolved": d(18), "game": "Gold Rush", "is_sb": False,
-         "description": "어드민 콘솔에서 게임 세션 강제종료 후 잔액 복원 검증.",
-         "_desc_full": "어드민 강제종료 gold rush admin session", "url": f"{_base}/GS-0940"},
-        {"key": "GS-0930", "summary": "Phoenix Rise Super Bonus TC 작성", "status": "완료",
-         "type": "Task", "priority": "Medium", "assignee": "김민준", "updated": d(30), "created": d(32),
-         "resolved": d(30), "game": "Phoenix Rise", "is_sb": True,
-         "description": "Super Bonus 피처 전체 TC 작성 및 팀 리뷰 완료.",
-         "_desc_full": "tc 작성 슈퍼보너스 phoenix rise super bonus", "url": f"{_base}/GS-0930"},
-        {"key": "GS-0920", "summary": "Dragon Fortune — 멀티플라이어 수식 검증", "status": "완료",
-         "type": "Story", "priority": "주요", "assignee": "이서연", "updated": d(35), "created": d(40),
-         "resolved": d(35), "game": "Dragon Fortune", "is_sb": False,
-         "description": "Math Model 대비 멀티플라이어 배당 수식 검증. 모두 일치 확인.",
-         "_desc_full": "멀티플라이어 수식 검증 dragon fortune math model", "url": f"{_base}/GS-0920"},
-    ]
-    for item in issues:
-        item.setdefault("_search_text", (item["summary"] + " " + item.get("description", "")).lower())
-    return issues
-
-
-def _make_demo_confluence() -> List[Dict]:
-    _domain = os.getenv("ATLASSIAN_DOMAIN", "example.atlassian.net")
-    _base = f"https://{_domain}/wiki"
-    return [
-        {"id": "c001", "title": "Dragon Fortune QA 체크리스트 v2.1", "space": "GM",
-         "url": f"{_base}/spaces/GM/pages/c001",
-         "_search_text": "dragon fortune qa 체크리스트 v2.1"},
-        {"id": "c002", "title": "Lucky Gems 릴리즈 리포트 1.3.0", "space": "GM",
-         "url": f"{_base}/spaces/GM/pages/c002",
-         "_search_text": "lucky gems 릴리즈 리포트 1.3.0 release"},
-        {"id": "c003", "title": "Gold Rush 버그 리포트 — 2026 Q1", "space": "GM",
-         "url": f"{_base}/spaces/GM/pages/c003",
-         "_search_text": "gold rush 버그 리포트 2026 q1 bug"},
-        {"id": "c004", "title": "Phoenix Rise Super Bonus TC 문서", "space": "GM",
-         "url": f"{_base}/spaces/GM/pages/c004",
-         "_search_text": "phoenix rise super bonus tc 문서"},
-        {"id": "c005", "title": "Aztec Treasure 회귀 테스트 결과", "space": "GM",
-         "url": f"{_base}/spaces/GM/pages/c005",
-         "_search_text": "aztec treasure 회귀 테스트 결과 regression"},
-        {"id": "c006", "title": "GS QA 팀 온보딩 가이드", "space": "GM",
-         "url": f"{_base}/spaces/GM/pages/c006",
-         "_search_text": "gs qa 팀 온보딩 가이드 onboarding"},
-        {"id": "c007", "title": "슬롯 게임 크래시 대응 매뉴얼", "space": "CVS",
-         "url": f"{_base}/spaces/CVS/pages/c007",
-         "_search_text": "슬롯 게임 크래시 대응 매뉴얼 crash"},
-        {"id": "c008", "title": "잭팟 시스템 QA 가이드라인", "space": "CVS",
-         "url": f"{_base}/spaces/CVS/pages/c008",
-         "_search_text": "잭팟 시스템 qa 가이드라인 jackpot"},
-    ]
-
-
 # ── Cache (L38~246) ───────────────────────────────────────────────────────────
 # CACHE 딕셔너리, Sheets 초기 로드 (_load_contents_sheet, _load_sheet_tab_map,
 # _load_ctd_game_info), _load_cache(), 1시간 자동갱신 루프
@@ -311,32 +176,6 @@ async def _load_cache() -> None:
     CACHE["loading"] = True
     loop = asyncio.get_event_loop()
 
-    # 데모 모드: 샘플 데이터를 직접 로드하고 외부 연결 생략
-    if _DEMO_MODE:
-        CACHE["jira"] = _make_demo_jira()
-        CACHE["confluence"] = _make_demo_confluence()
-        CACHE["game_code_map"] = {
-            "dragonfortune": "Dragon Fortune",
-            "luckygems": "Lucky Gems",
-            "goldrush": "Gold Rush",
-            "phoenixrise": "Phoenix Rise",
-            "aztectreasure": "Aztec Treasure",
-        }
-        CACHE["game_list"] = [
-            {"game_code": "dragonfortune", "game_name": "Dragon Fortune"},
-            {"game_code": "luckygems", "game_name": "Lucky Gems"},
-            {"game_code": "goldrush", "game_name": "Gold Rush"},
-            {"game_code": "phoenixrise", "game_name": "Phoenix Rise"},
-            {"game_code": "aztectreasure", "game_name": "Aztec Treasure"},
-        ]
-        CACHE["jira_error"] = None
-        CACHE["confluence_error"] = None
-        CACHE["mcp_error"] = None
-        CACHE["last_updated"] = datetime.now()
-        CACHE["loading"] = False
-        print("[Cache] 데모 모드 — 샘플 데이터 로드 완료")
-        return
-
     async def _fetch_jira():
         try:
             data = await loop.run_in_executor(_executor, fetch_all_jira)
@@ -460,8 +299,6 @@ async def presentation():
 
 @app.get("/api/me")
 async def api_me():
-    if _DEMO_MODE:
-        return JSONResponse({"name": "Demo User", "initials": "DU"})
     from search import ATLASSIAN_EMAIL
     raw = ATLASSIAN_EMAIL.split("@")[0] if ATLASSIAN_EMAIL else "unknown"
     parts = raw.replace(".", " ").split()
@@ -485,7 +322,6 @@ async def api_status():
         "jira_error": CACHE.get("jira_error"),
         "confluence_error": CACHE.get("confluence_error"),
         "mcp_error": CACHE.get("mcp_error"),
-        "demo_mode": _DEMO_MODE,
     })
 
 

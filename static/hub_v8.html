@@ -3106,22 +3106,6 @@ late.forEach(e=>{
   fetch('/api/status')
     .then(r=>r.json())
     .then(d=>{
-      // 데모 모드 배너
-      if(d.demo_mode){
-        let banner=document.getElementById('demo-mode-banner');
-        if(!banner){
-          banner=document.createElement('div');
-          banner.id='demo-mode-banner';
-          banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9998;background:#7c6af7;color:#fff;font-size:12px;font-weight:600;text-align:center;padding:6px 16px;letter-spacing:.2px';
-          banner.innerHTML='데모 모드 — Jira / Confluence / MCP 없이 샘플 데이터로 동작 중입니다. <a href="https://github.com/hyewon-kim-bagel/qa-search#setup" target="_blank" style="color:#e0d9ff;text-decoration:underline;margin-left:8px">설정 방법 →</a>';
-          document.body.prepend(banner);
-          // topbar, sidebar 위치 보정
-          const topbar=document.querySelector('.topbar');
-          const sb=document.querySelector('.sb');
-          if(topbar) topbar.style.top='30px';
-          if(sb) sb.style.top='30px';
-        }
-      }
       if(d.loading&&!d.ready){
         el.innerHTML='캐시 로딩 중… <span style="color:var(--acc)">●</span>';
         setTimeout(loadCacheStat,3000);
@@ -3132,9 +3116,7 @@ late.forEach(e=>{
         if(d.jira_error) errParts.push('Jira');
         if(d.confluence_error) errParts.push('Confluence');
         if(d.mcp_error) errParts.push('Drive');
-        let stat=d.demo_mode
-          ? `샘플 데이터 — Jira <strong style="color:var(--t1)">${d.jira_count}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count}건</strong>`
-          : `Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}건</strong> 로드됨`;
+        let stat=`Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}건</strong> 로드됨`;
         if(errParts.length) stat+=` <span style="color:var(--red);font-size:11px">⚠ ${errParts.join('/')} 연결 오류</span>`;
         el.innerHTML=stat;
       }
