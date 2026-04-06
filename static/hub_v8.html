@@ -1198,28 +1198,6 @@ const PAGES={
   'hub-ai':{title:'Hub AI',sub:'Jira · Confluence 데이터 기반 QA 어시스턴트'},
   'search-results':{title:'검색 결과',sub:''},
 };
-const GAMES={
-  'star-juggler':{name:'Star Juggler',stage:'QA',qa:'hyewon',qaC:'var(--acc)',due:'3/23',red:true,bugs:3,game_id:306,qa_sheet_id:'1XGmekazm7m9dIRcaXRV2l1gpSKUWnsuY50AQWVlLArI',tc_prefix:'sjg',
-    drive:[{ic:'📋',n:'Star Juggler TC',h:'수정 3/20'},{ic:'📘',n:'GDD',h:'v1.4'},{ic:'🔢',n:'Math Doc',h:'수정 3/15'},{ic:'🔊',n:'Sound Guide',h:'가이드'},{ic:'📊',n:'CTD 시트',h:'수정 3/18'}],
-    slack:{ch:'#star-juggler-qa',mem:'12명',msgs:[{u:'hyewon',t:'10:32',m:'Spin 버튼 응답 이슈 확인 부탁해요'},{u:'minsang',t:'10:45',m:'재현됩니다'},{u:'dev.jake',t:'11:02',m:'오후 2시 픽스 배포 예정'}]},
-    jira:{ep:'GS-1024 Star Juggler',tks:[{k:'GS-1031',ic:'🐛',st:'ip',t:'Spin 버튼 응답 지연'},{k:'GS-1035',ic:'🐛',st:'td',t:'페이라인 강조 누락'},{k:'GS-1028',ic:'🐛',st:'rv',t:'사운드 볼륨 불일치'},{k:'GS-1025',ic:'✅',st:'dn',t:'QA 환경 세팅'}]}},
-  'ocean':{name:'Ocean Spirit',stage:'QA',qa:'dajeong',qaC:'var(--acc2)',due:'3/27',red:false,bugs:2,game_id:317,qa_sheet_id:'17Cyn0uFRX9EBRT7qUKEuoZ9OvV89v3eDzDZmAiWcrbA',tc_prefix:'ost',
-    drive:[{ic:'📋',n:'Ocean Spirit TC',h:'수정 3/21'},{ic:'🎨',n:'Art Guide',h:'v2.0'},{ic:'📊',n:'Ocean CTD',h:'수정 3/19'}],
-    slack:{ch:'#ocean-spirit',mem:'8명',msgs:[{u:'dajeong',t:'09:15',m:'아트 변경 버전 QA 시작'},{u:'art.soo',t:'09:40',m:'v2.1 패치 반영됐어요'}]},
-    jira:{ep:'GS-980 Ocean Spirit',tks:[{k:'GS-990',ic:'🐛',st:'ip',t:'배경 전환 깜빡임'},{k:'GS-991',ic:'🐛',st:'td',t:'점수 텍스트 오버플로우'},{k:'GS-985',ic:'✅',st:'dn',t:'UI 레이아웃 검수'}]}},
-  'bingo':{name:'Bingo Ahoy',stage:'폴리싱',qa:'minsang',qaC:'#f59e0b',due:'4/7',red:false,bugs:0,game_id:308,qa_sheet_id:'1-TwKrqY5vkZBjngPnzFHHuwFI_mlW5AfOIZF-Cgm2Jo',tc_prefix:'bah',
-    drive:[{ic:'📋',n:'Bingo TC',h:'수정 3/5'},{ic:'📘',n:'GDD',h:'v3.0'},{ic:'📊',n:'CTD',h:'수정 3/1'}],
-    slack:{ch:'#bingo-ahoy',mem:'10명',msgs:[{u:'minsang',t:'어제',m:'폴리싱 피드백 공유했어요'}]},
-    jira:{ep:'GS-900 Bingo Ahoy',tks:[{k:'GS-910',ic:'⚙️',st:'td',t:'폴리싱 체크리스트'},{k:'GS-905',ic:'✅',st:'dn',t:'사운드 최종 확인'}]}},
-  'roar':{name:'Roar & Flame',stage:'DEV',qa:'미배정',qaC:'#cbd5e1',due:'4/20',red:false,bugs:0,game_id:321,tc_prefix:'rnf',
-    drive:[{ic:'📘',n:'Roar GDD',h:'v0.8'},{ic:'🔢',n:'Math',h:'초안'}],
-    slack:{ch:'#roar-flame-dev',mem:'6명',msgs:[{u:'dev.tom',t:'어제',m:'빌드 완료'}]},
-    jira:{ep:'GS-860 Roar & Flame',tks:[{k:'GS-870',ic:'⚙️',st:'ip',t:'게임 로직 구현'},{k:'GS-862',ic:'⚙️',st:'td',t:'QA 담당자 배정'}]}},
-  'moolah':{name:'Moolah',stage:'DONE',qa:'hyewon',qaC:'var(--acc)',due:'3/15',red:false,bugs:0,
-    drive:[{ic:'📋',n:'Moolah TC',h:'완료'},{ic:'📊',n:'Moolah CTD',h:'최종'}],
-    slack:{ch:'#moolah-qa',mem:'9명',msgs:[{u:'hyewon',t:'3/15',m:'QA 완료 ✓'}]},
-    jira:{ep:'GS-800 Moolah',tks:[{k:'GS-812',ic:'✅',st:'dn',t:'최종 QA 검수'},{k:'GS-808',ic:'✅',st:'dn',t:'릴리즈 체크'}]}},
-};
 const stMap={'QA':'background:var(--accbg);color:var(--acc);border-color:var(--accbd)','폴리싱':'background:var(--acc2bg);color:var(--acc2)','DEV':'background:var(--amberbg);color:var(--amber)','ART':'background:var(--bg);color:var(--t3)','DONE':'background:var(--greenbg);color:var(--green);border-color:var(--greenbd)'};
 const stLbl={'ip':'진행중','rv':'검토중','td':'대기','dn':'완료'};
 const stCls={'ip':'st-ip','rv':'st-rv','td':'st-td','dn':'st-dn'};
@@ -1372,21 +1350,23 @@ function _renderLiveChart(curData, prevData){
       h+=`<rect x="${slotX}" y="${TOP}" width="${SLOT}" height="${BL-TOP}" rx="4" fill="rgba(79,142,247,.06)" stroke="rgba(79,142,247,.2)" stroke-width="1"/>`;
     }
 
+    const _R=5;
     // 전년도 바 (흐리게, 비교 ON일 때만)
     if(hasPrev){
       let py=BL;
       const pMn=Math.round(p.mn*scale), pMj=Math.round(p.mj*scale), pC=Math.round(p.c*scale);
-      if(pMn>0){h+=`<rect x="${prevX}" y="${py-pMn}" width="${BAR}" height="${pMn}" rx="3" fill="#cbd5e1" opacity=".45"/>`;py-=pMn;}
-      if(pMj>0){h+=`<rect x="${prevX}" y="${py-pMj}" width="${BAR}" height="${pMj}" rx="0" fill="#f59e0b" opacity=".45"/>`;py-=pMj;}
-      if(pC>0) {h+=`<rect x="${prevX}" y="${py-pC}"  width="${BAR}" height="${pC}"  rx="0" fill="#dc2626" opacity=".45"/>`;py-=pC;}
+      if(pMn>0){ if(pMj||pC){h+=`<rect x="${prevX}" y="${py-pMn}" width="${BAR}" height="${pMn+1}" fill="#cbd5e1" opacity=".45"/>`;}else{h+=_svgRoundTop(prevX,py-pMn,BAR,pMn,_R)+` fill="#cbd5e1" opacity=".45"/>`;}py-=pMn;}
+      if(pMj>0){ if(pC)     {h+=`<rect x="${prevX}" y="${py-pMj}" width="${BAR}" height="${pMj+1}" fill="#f59e0b" opacity=".45"/>`;}else{h+=_svgRoundTop(prevX,py-pMj,BAR,pMj,_R)+` fill="#f59e0b" opacity=".45"/>`;}py-=pMj;}
+      if(pC>0) {h+=_svgRoundTop(prevX,py-pC,BAR,pC,_R)+` fill="#dc2626" opacity=".45"/>`;}
     }
 
     // 현재 연도 바
     let cy=BL;
     const cMn=Math.round(c.mn*scale), cMj=Math.round(c.mj*scale), cC=Math.round(c.c*scale);
-    if(cMn>0){h+=`<rect x="${curX}" y="${cy-cMn}" width="${BAR}" height="${cMn}" rx="3" fill="#cbd5e1"/>`;cy-=cMn;}
-    if(cMj>0){h+=`<rect x="${curX}" y="${cy-cMj}" width="${BAR}" height="${cMj}" rx="0" fill="#f59e0b"/>`;cy-=cMj;}
-    if(cC>0) {h+=`<rect x="${curX}" y="${cy-cC}"  width="${BAR}" height="${cC}"  rx="0" fill="#dc2626"/>`;cy-=cC;}
+    if(cMn>0){ if(cMj||cC){h+=`<rect x="${curX}" y="${cy-cMn}" width="${BAR}" height="${cMn+1}" fill="#cbd5e1"/>`;}else{h+=_svgRoundTop(curX,cy-cMn,BAR,cMn,_R)+` fill="#cbd5e1"/>`;}cy-=cMn;}
+    if(cMj>0){ if(cC)     {h+=`<rect x="${curX}" y="${cy-cMj}" width="${BAR}" height="${cMj+1}" fill="#f59e0b"/>`;}else{h+=_svgRoundTop(curX,cy-cMj,BAR,cMj,_R)+` fill="#f59e0b"/>`;}cy-=cMj;}
+    if(cC>0) {h+=_svgRoundTop(curX,cy-cC,BAR,cC,_R)+` fill="#dc2626"/>`;}
+
 
     // 월 레이블
     const lblStyle=isCur?`fill="#4f8ef7" font-weight="700"`:`fill="#96a3b8"`;
@@ -2017,14 +1997,10 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
   const isSB=key.startsWith('SB_');
   const baseName=key.replace(/^SB_/,'');
   const _normName=s=>s.replace(/ & /g,' and ').replace(/&/g,'and').replace(/'/g,'').replace(/\u2019/g,'').toLowerCase();
-  let g=GAMES[key];
-  if(!g) g=Object.values(GAMES).find(v=>_normName(v.name)===_normName(baseName))||{name:baseName};
-
-  // 헤더 즉시 렌더 (GAMES에 없으면 스케줄 데이터로 폴백)
+  // 헤더 즉시 렌더
   const sbTitleTag=isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':'';
   document.getElementById('pn-title').innerHTML=baseName+sbTitleTag;
-  // schedDue(실제 스케줄) 우선, 없을 때만 GAMES 하드코딩 fallback
-  const _rawDue=schedDue||g.due||'';
+  const _rawDue=schedDue||'';
   const dueVal=_rawDue?(_rawDue.match(/^\d{4}-\d{2}-\d{2}$/)?_rawDue.slice(5).replace('-','/'):_rawDue):'';
 
   function _renderMeta(gameObj){
@@ -2322,17 +2298,7 @@ function _applyTcData(prefix, data) {
   }
 }
 
-(function loadTcProgress() {
-  Object.values(GAMES).forEach(g => {
-    if (!g.qa_sheet_id || !g.tc_prefix) return;
-    fetch('/api/tc_progress?sheet_id=' + encodeURIComponent(g.qa_sheet_id))
-      .then(r => r.json())
-      .then(data => {
-        if (!data.error) _applyTcData(g.tc_prefix, data);
-      })
-      .catch(() => {});
-  });
-})();
+
 
 // ── SCHEDULE & TIMELINE & GAME ISSUES ────────────────────────
 let _schedYear=2026,_schedMonth=3;
@@ -4274,10 +4240,6 @@ function _tourOpenDemoPanel(){
              || (_schedData||[])[0];
   if(entry){
     openPanel(entry.game_name, null, entry.qa_sheet_id||'', entry.assignee||'', entry.qa_end||'');
-  } else {
-    // 스케줄 데이터 없을 때 GAMES 첫 번째 게임으로 폴백
-    const demoKey = Object.keys(GAMES)[0];
-    if(demoKey){ const g=GAMES[demoKey]; openPanel(demoKey, null, g.qa_sheet_id||'', '', ''); }
   }
 }
 function _tourClosePanel(){
