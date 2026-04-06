@@ -1322,6 +1322,9 @@ function _renderPanelBody(g, data, links, driveLoading){
   links=links||{};
   let b='';
 
+  const _PN_GITHUB=`<svg width="12" height="12" viewBox="0 0 24 24" fill="#24292f"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>`;
+  // GitHub repo base URL — 변경 시 아래 상수만 수정
+  const _GH_REPO_BASE='https://github.com/bagelcode-gamestudio/games/blob';
   const _PN_DRIVE=`<svg width="12" height="10" viewBox="0 0 87 78"><path d="M6.6 66.9 10.4 73.5c.8 1.4 1.9 2.5 3.3 3.3L27.5 53H0c0 1.5.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.7 25 29.9 1.2C28.5 2 27.4 3.1 26.6 4.5L1.2 48.4A9.1 9.1 0 0 0 0 53h27.5z" fill="#00ac47"/><path d="M73.5 76.8c1.4-.8 2.5-1.9 3.3-3.3l1.6-2.7 7.7-13.3c.8-1.4 1.2-2.9 1.2-4.5H59.8l5.8 11.5z" fill="#ea4335"/><path d="M43.7 25 57.4 1.2C56-.6 54.4-.1 52.9-.1H34.5c-1.6 0-3.1.5-4.5 1.2z" fill="#00832d"/><path d="M59.8 53H27.5L13.7 76.8c1.4.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.1-.4 4.5-1.2z" fill="#2684fc"/><path d="M73.4 26.5 60.7 4.5C59.9 3.1 58.8 2 57.4 1.2L43.7 25l16.1 27h27.4c0-1.5-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>`;
   const _PN_SLACK=`<svg width="12" height="12" viewBox="0 0 24 24"><path d="M5 15.5a2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2h2v2zm1 0a2 2 0 0 1 2-2 2 2 0 0 1 2 2v5a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-5z" fill="#36C5F0"/><path d="M8.5 5a2 2 0 0 1-2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2v2h-2zm0 1a2 2 0 0 1 2 2 2 2 0 0 1-2 2H3.5a2 2 0 0 1-2-2 2 2 0 0 1 2-2h5z" fill="#2EB67D"/><path d="M19 8.5a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2v-2h2zm-1 0a2 2 0 0 1-2 2 2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2 2 2 0 0 1 2 2v5z" fill="#ECB22E"/><path d="M15.5 19a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2v-2h2zm0-1a2 2 0 0 1-2-2 2 2 0 0 1 2-2h5a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-5z" fill="#E01E5A"/></svg>`;
   const _PN_JIRA=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#0052CC"/><path d="M12.5 6.5 8 12l4.5 5.5m0-11L17 12l-4.5 5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -1380,15 +1383,57 @@ function _renderPanelBody(g, data, links, driveLoading){
   if(jira.length===0){
     b+=`<div style="font-size:11px;color:var(--t3);padding:8px 0">검색된 이슈 없음</div>`;
   } else {
-    jira.slice(0,10).forEach(t=>{
+    const _isEpic=t=>t.type==='에픽'||t.type==='Epic';
+    const epics=jira.filter(_isEpic);
+    const others=jira.filter(t=>!_isEpic(t));
+    const shown=[...epics,...others].slice(0,5);
+    const hidden=jira.length-shown.length;
+    shown.forEach(t=>{
       const ic=t.type&&t.type.toLowerCase().includes('bug')?_PN_JIRA_BUG:_PN_JIRA;
       b+=`<a class="jira-tk" href="${t.url||'#'}" target="_blank" rel="noopener" style="text-decoration:none"><span class="jt-ic">${ic}</span><span class="jt-key">${_pnEsc(t.key||'')}</span><span class="jt-title">${_pnEsc(t.summary||t.title||'')}</span>${_jiraStBadge(t.status)}</a>`;
     });
-    if(jira.length>10){
-      b+=`<div style="font-size:11px;color:var(--t3);padding:6px 0 0">+ ${jira.length-10}건 더</div>`;
+    if(hidden>0){
+      const _jql=`project = GS AND text ~ "${(g.name||'').replace(/"/g,'')}" ORDER BY updated DESC`;
+      const _jiraUrl=`https://bagelcode.atlassian.net/issues/?jql=${encodeURIComponent(_jql)}`;
+      b+=`<a href="${_jiraUrl}" target="_blank" rel="noopener" style="font-size:11px;color:var(--t3);padding:6px 0 0;text-decoration:none;display:block">+ ${hidden}건 더 ↗</a>`;
     }
   }
   b+=`</div>`;
+
+  // ── GitHub ──
+  const _gh=links.github;
+  let _ghFiles=[];
+  let _ghBranch='develop';
+  if(_gh&&_gh.files){
+    _ghBranch=_gh.branch||'develop';
+    const f=_gh.files;
+    if(f.logic)     _ghFiles.push({label:'서버 로직',      path:f.logic});
+    if(f.value)     _ghFiles.push({label:'서버 값',        path:f.value});
+    if(f.interface) _ghFiles.push({label:'서버 인터페이스', path:f.interface});
+  } else {
+    // fallback: 게임명으로 슬러그 추측
+    const _ghSlug=(g.name||g.key||g.game_name||'').replace(/SB_/i,'').trim()
+      .toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+    if(_ghSlug){
+      _ghFiles=[
+        {label:'서버 로직',      path:`src/slot_game/${_ghSlug}.ts`},
+        {label:'서버 값',        path:`src/slot_game/${_ghSlug}.value.ts`},
+        {label:'서버 인터페이스', path:`src/slot_game/${_ghSlug}.interface.ts`},
+      ];
+    }
+  }
+  if(_ghFiles.length){
+    b+=`<div><div class="pn-sec-lbl">${_PN_GITHUB}GitHub</div>`;
+    _ghFiles.forEach(({label,path})=>{
+      const url=`${_GH_REPO_BASE}/${_ghBranch}/${path}`;
+      b+=`<a class="jira-tk" href="${url}" target="_blank" rel="noopener" style="text-decoration:none;display:flex;align-items:center;gap:6px">
+        <span style="font-size:9px;font-weight:700;color:var(--t3);width:72px;flex-shrink:0">${label}</span>
+        <span style="font-size:10px;font-family:monospace;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${path}</span>
+        <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.5" style="flex-shrink:0;opacity:0;transition:opacity .12s" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0"><path d="M2 12L12 2M12 2H7M12 2v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>`;
+    });
+    b+=`</div>`;
+  }
 
   document.getElementById('pn-body').innerHTML=b;
 }

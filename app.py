@@ -524,6 +524,37 @@ _TC_CACHE_TTL = 300    # 5분
 _GL_CACHE: dict = {}   # (name, tc_prefix, game_id, is_sb) -> (result, timestamp)
 _GL_CACHE_TTL = 600    # 10분
 
+_REPOB_BIN = "/Users/kimhyewon/.claude/plugins/marketplaces/bagel-marketplace/plugins/repob/skills/repob/bin/repob"
+_GAMES_BRANCHES: dict = {"branches": [], "ts": 0.0}
+
+def _fetch_games_branches() -> List[str]:
+    import time as _t
+    now = _t.time()
+    if now - _GAMES_BRANCHES["ts"] < 3600 and _GAMES_BRANCHES["branches"]:
+        return _GAMES_BRANCHES["branches"]
+    try:
+        r = subprocess.run([_REPOB_BIN, "branches", "games"],
+                           capture_output=True, text=True, timeout=10)
+        data = json.loads(r.stdout)
+        branches = [b["name"] for b in data.get("branches", [])]
+        _GAMES_BRANCHES["branches"] = branches
+        _GAMES_BRANCHES["ts"] = now
+        return branches
+    except Exception:
+        return _GAMES_BRANCHES["branches"]
+
+def _find_game_branch(game_name: str) -> str:
+    """게임명으로 games 레포 브랜치 찾기. 없으면 develop."""
+    slug = game_name.lower()
+    slug = slug.replace(" & ", "-and-").replace("&", "and")
+    slug = slug.replace("\u2019", "").replace("\u2018", "").replace("'", "")
+    slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
+    for branch in _fetch_games_branches():
+        branch_slug = branch.split("/")[-1]
+        if slug == branch_slug or slug in branch_slug or branch_slug in slug:
+            return branch
+    return "develop"
+
 
 def _read_tc_sheet(sheet_id: str, game_type: str = "") -> Optional[dict]:
     """gws CLI로 QA 시트에서 TC 진행률 읽기.
@@ -1030,8 +1061,25 @@ async def api_game_links(name: str, tc_prefix: str = "", game_id: str = "", is_s
     if fast == "1":
         return JSONResponse(result)
 
-    # GDD/MATH 병렬 실행
-    await asyncio.gather(_find_gdd(), _find_math())
+    async def _find_github():
+        try:
+            _gm_raw = await loop.run_in_executor(
+                _executor, lambda: call_mcp_tool("get_game", {"game_name": name})
+            )
+            if not _gm_raw:
+                return
+            _gm_data = json.loads(_gm_raw)
+            if not _gm_data or _gm_data.get("error"):
+                return
+            _server = _gm_data.get("sources", {}).get("server", {})
+            if _server:
+                _branch = await loop.run_in_executor(_executor, lambda: _find_game_branch(name))
+                result["github"] = {"branch": _branch, "files": _server}
+        except Exception:
+            pass
+
+    # GDD/MATH/GitHub 병렬 실행
+    await asyncio.gather(_find_gdd(), _find_math(), _find_github())
 
     _GL_CACHE[_gl_key] = (result, datetime.now())
     return JSONResponse(result)
