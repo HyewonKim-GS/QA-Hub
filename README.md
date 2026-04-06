@@ -13,10 +13,10 @@ Game Studio QA팀 전용 통합 검색 및 어시스턴트 도구
 
 ## 기술 스택
 
-- Python 3.9 / FastAPI / Uvicorn
-- 데이터 소스: Jira, Confluence, Google Drive, Slack, gs-os-ontology MCP
-- GPT-4o-mini (채팅 의도 분류 및 응답 생성)
-- repob CLI — 사내 games 레포에서 게임 브랜치 및 코드 참조 조회 (Hub AI 컨텍스트 보강)
+Backend: Python 3.9 / FastAPI / Uvicorn
+데이터 소스: Jira, Confluence, Google Drive, Slack, gs-os-ontology MCP
+LLM: OpenAI-compatible API
+repob CLI — 사내 games 레포에서 게임 브랜치 및 코드 참조 조회 (Hub AI 컨텍스트 보강)
 
 ## 실행 방법
 
