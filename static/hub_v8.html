@@ -588,9 +588,23 @@ html,body{height:100%;overflow:hidden;font-family:'Pretendard',-apple-system,san
 /* ? 버튼 */
 .tour-help-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--bd);background:var(--sf);color:var(--t3);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
 .tour-help-btn:hover{border-color:var(--acc);color:var(--acc);background:#eff6ff}
+
+/* ── SPINNER ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-ic{display:inline-block;animation:spin 1s linear infinite}
+
+/* ── TOAST ── */
+#toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.info{background:#1a2332;color:#fff}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:var(--red);color:#fff}
+.toast.warn{background:var(--amber);color:#fff}
 </style>
 </head>
 <body>
+<div id="toast-wrap"></div>
 <div class="app">
 
 <!-- SIDEBAR -->
@@ -1162,6 +1176,20 @@ html,body{height:100%;overflow:hidden;font-family:'Pretendard',-apple-system,san
 </div>
 
 <script>
+// ── Toast 알림 ──────────────────────────────────────────────
+function _toast(msg, type='info', duration=3000){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=msg;
+  wrap.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  setTimeout(()=>{
+    el.classList.remove('show');
+    setTimeout(()=>el.remove(), 200);
+  }, duration);
+}
+
 const PAGES={
   'dashboard':{title:'대시보드',sub:'이번 주 QA 현황을 한눈에 확인하세요'},
   'schedule':{title:'스케줄',sub:'QA 일정 및 게임 릴리즈 타임라인'},
@@ -1657,11 +1685,16 @@ function showSearchResults(q){
   document.getElementById('hub-search-drop').style.display='none';
   document.getElementById('sr-query-text').textContent='"'+q+'"';
   document.getElementById('sr-count').textContent='';
-  document.getElementById('sr-results').innerHTML='<div style="padding:48px;text-align:center;color:var(--t3);font-size:13px">검색 중…</div>';
+  document.getElementById('sr-results').innerHTML='<div style="padding:48px;text-align:center;color:var(--t3);font-size:13px"><span class="spin-ic">⟳</span> 검색 중…</div>';
   fetch('/api/search?q='+encodeURIComponent(q))
     .then(r=>r.json())
     .then(data=>_renderSR(q,data))
-    .catch(()=>{document.getElementById('sr-results').innerHTML='<div style="padding:48px;text-align:center;color:var(--t3)">서버 연결 오류</div>';});
+    .catch(()=>{
+      document.getElementById('sr-results').innerHTML=`<div style="padding:48px;text-align:center;font-size:13px">
+        <div style="color:var(--red);margin-bottom:12px">서버 연결 오류</div>
+        <button onclick="showSearchResults(${JSON.stringify(q)})" style="padding:6px 16px;border-radius:8px;border:1.5px solid var(--bd);background:var(--sf);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">재시도</button>
+      </div>`;
+    });
 }
 
 function goBackFromSearch(){
@@ -1870,7 +1903,7 @@ async function filterIssues(){
   _loadYearChart(yr);
 
   const tbody=document.getElementById('issue-tbody');
-  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t3);font-size:12px">불러오는 중…</td></tr>';
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t3);font-size:12px"><span class="spin-ic">⟳</span> 불러오는 중…</td></tr>';
   let url='/api/live_issues?year='+yr;
   if(month) url+='&month='+month;
   try{
@@ -1878,7 +1911,10 @@ async function filterIssues(){
     const data=await res.json();
     _renderIssueRows(data.issues||[]);
   }catch(e){
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--red);font-size:12px">불러오기 실패</td></tr>';
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;font-size:12px">
+      <span style="color:var(--red)">불러오기 실패</span>
+      <button onclick="filterIssues()" style="margin-left:10px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--bd);background:var(--sf);font-size:11px;cursor:pointer;font-family:inherit">재시도</button>
+    </td></tr>`;
   }
 }
 function _pnEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -2725,7 +2761,7 @@ async function saveSchedule(){
   const qaEnd=document.getElementById('sm-qa-end').value;
   const tcEnd=document.getElementById('sm-tc-end').value;
   const assignee=document.getElementById('sm-assignee').value;
-  if(!gameName||!qaStart||!qaEnd){alert('게임, QA 시작일, 마감일은 필수입니다.');return;}
+  if(!gameName||!qaStart||!qaEnd){_toast('게임, QA 시작일, 마감일은 필수입니다.','warn');return;}
   const btn=document.getElementById('sm-save-btn');
   btn.textContent='저장 중…';btn.disabled=true;
   try{
@@ -2744,7 +2780,7 @@ async function saveSchedule(){
     renderDashboardTcCard();
     _giLoaded=false; loadGameIssuesList();
     _notifDetect();
-  }catch(e){alert('저장 중 오류: '+e.message);btn.textContent='저장';btn.disabled=false;}
+  }catch(e){_toast('저장 중 오류: '+e.message,'error');btn.textContent='저장';btn.disabled=false;}
 }
 async function deleteSchedule(){
   if(!_smEditId||!confirm('이 일정을 삭제하시겠습니까?'))return;
@@ -2759,7 +2795,7 @@ async function deleteSchedule(){
     renderDashboardTcCard();
     _giLoaded=false; loadGameIssuesList();
     _notifDetect();
-  }catch(e){alert('삭제 오류');}
+  }catch(e){_toast('삭제 중 오류가 발생했습니다.','error');}
 }
 
 // ── Event Modal ──────────────────────────────────────────
@@ -2789,7 +2825,7 @@ async function saveEvent(){
   const title=document.getElementById('ev-title').value.trim();
   const start=document.getElementById('ev-start').value;
   const end=document.getElementById('ev-end').value;
-  if(!title||!start||!end){alert('행사명, 시작일, 종료일은 필수입니다.');return;}
+  if(!title||!start||!end){_toast('행사명, 시작일, 종료일은 필수입니다.','warn');return;}
   const btn=document.getElementById('ev-save-btn');
   btn.textContent='저장 중…';btn.disabled=true;
   try{
@@ -2801,7 +2837,7 @@ async function saveEvent(){
     closeEventModal();
     try{const r=await fetch('/api/events');_eventsData=await r.json();}catch(e){_eventsData=[];}
     renderCalendar(_schedYear,_schedMonth);
-  }catch(e){alert('저장 중 오류: '+e.message);btn.textContent='저장';btn.disabled=false;}
+  }catch(e){_toast('저장 중 오류: '+e.message,'error');btn.textContent='저장';btn.disabled=false;}
 }
 async function deleteEvent(){
   if(!_evEditId||!confirm('이 행사를 삭제하시겠습니까?'))return;
@@ -2810,7 +2846,7 @@ async function deleteEvent(){
     closeEventModal();
     try{const r=await fetch('/api/events');_eventsData=await r.json();}catch(e){_eventsData=[];}
     renderCalendar(_schedYear,_schedMonth);
-  }catch(e){alert('삭제 오류');}
+  }catch(e){_toast('삭제 중 오류가 발생했습니다.','error');}
 }
 
 // ── Slot Issues (Game Issues) ─────────────────────────────
@@ -3250,7 +3286,6 @@ async function _giRenderCard(entry){
   }
 }
 
-function selectGameIssue(){} // 레거시 stub
 
 // ── 대시보드 TC현황 카드 ──────────────────────────────────
 function _daysUntil(dateStr){
