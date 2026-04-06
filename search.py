@@ -108,6 +108,8 @@ def fetch_all_jira() -> List[Dict]:
         return all_items
     except Exception as e:
         console.print(f"[red][Cache][Jira] 오류: {e}[/red]")
+        if not all_items:
+            raise
         return all_items
 
 
@@ -255,6 +257,7 @@ def _fetch_space_pages(space_key: str) -> List[Dict]:
 def fetch_all_confluence() -> List[Dict]:
     """Game Studio(GM) + CVS 스페이스 전체 페이지 수집."""
     all_items: List[Dict] = []
+    errors: List[str] = []
     for space_key in ["GM", "CVS"]:
         try:
             pages = _fetch_space_pages(space_key)
@@ -262,6 +265,9 @@ def fetch_all_confluence() -> List[Dict]:
             console.print(f"[dim][Cache] Confluence {space_key} {len(pages)}건[/dim]")
         except Exception as e:
             console.print(f"[red][Cache][Confluence][{space_key}] 오류: {e}[/red]")
+            errors.append(str(e))
+    if errors and not all_items:
+        raise Exception(f"Confluence 연결 실패: {'; '.join(errors)}")
     console.print(f"[dim][Cache] Confluence 총 {len(all_items)}건 수집 완료[/dim]")
     return all_items
 

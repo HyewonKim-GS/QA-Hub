@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .playwright-mcp/
 memos.json
+qa.db
+qa.db-shm
+qa.db-wal
+*.json.bak

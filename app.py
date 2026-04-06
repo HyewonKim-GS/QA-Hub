@@ -5,8 +5,11 @@ QA Search Web UI — FastAPI backend (with local cache)
 
 import asyncio
 import json
+import os
 import re
+import sqlite3
 import subprocess
+import threading
 import uuid
 from contextlib import asynccontextmanager
 from concurrent.futures import ThreadPoolExecutor
@@ -36,6 +39,141 @@ from search import (
     call_mcp_tool,
 )
 
+# ── Demo Mode ─────────────────────────────────────────────────────────────────
+# Atlassian 토큰이 없으면 자동으로 데모 모드. 샘플 데이터로 UI를 표시한다.
+_DEMO_MODE: bool = not bool(os.getenv("ATLASSIAN_API_TOKEN"))
+
+
+def _make_demo_jira() -> List[Dict]:
+    """데모용 샘플 Jira 이슈 생성. 날짜를 오늘 기준으로 동적 생성."""
+    _today = date.today()
+    _mon = _today - timedelta(days=_today.weekday())  # 이번 주 월요일
+
+    def d(delta: int) -> str:
+        return (_today - timedelta(days=delta)).isoformat()
+
+    def dw(delta: int) -> str:
+        return (_mon + timedelta(days=delta)).isoformat()
+
+    _domain = os.getenv("ATLASSIAN_DOMAIN", "example.atlassian.net")
+    _base = f"https://{_domain}/browse"
+
+    issues = [
+        # 이번 주 버그 (weekly_bugs에 표시됨)
+        {"key": "GS-1001", "summary": "Dragon Fortune — 프리스핀 중 앱 크래시 발생", "status": "진행 중",
+         "type": "Bug", "priority": "주요", "assignee": "김민준", "updated": dw(1), "created": dw(1),
+         "resolved": None, "game": "Dragon Fortune", "is_sb": False,
+         "description": "프리스핀 10회 트리거 후 5회째 스핀에서 강제 종료됨. iOS 17.4 재현율 100%.",
+         "_desc_full": "프리스핀 중 앱 크래시 dragon fortune ios crash", "url": f"{_base}/GS-1001"},
+        {"key": "GS-1002", "summary": "Lucky Gems — 잭팟 연출 BGM이 루프되지 않음", "status": "열림",
+         "type": "Bug", "priority": "Medium", "assignee": "이서연", "updated": dw(0), "created": dw(0),
+         "resolved": None, "game": "Lucky Gems", "is_sb": False,
+         "description": "잭팟 당첨 후 연출 BGM이 한 번 재생되고 멈춤. 루프 설정 누락 추정.",
+         "_desc_full": "잭팟 bgm 사운드 lucky gems jackpot sound", "url": f"{_base}/GS-1002"},
+        {"key": "GS-1003", "summary": "Gold Rush — 베팅 한도 초과 시 에러 메시지 미표시", "status": "열림",
+         "type": "Bug", "priority": "사소", "assignee": "박지호", "updated": dw(2), "created": dw(2),
+         "resolved": None, "game": "Gold Rush", "is_sb": False,
+         "description": "최대 베팅 초과 입력 시 UI 에러 없이 이전 값으로 리셋됨.",
+         "_desc_full": "베팅 한도 에러 gold rush bet limit", "url": f"{_base}/GS-1003"},
+        {"key": "GS-1004", "summary": "Phoenix Rise — 슈퍼보너스 릴 애니메이션 끊김", "status": "진행 중",
+         "type": "Bug", "priority": "주요", "assignee": "최유진", "updated": dw(1), "created": dw(1),
+         "resolved": None, "game": "Phoenix Rise", "is_sb": True,
+         "description": "Super Bonus 진입 후 릴 스핀 시 1~2프레임 드롭 발생. Galaxy S24 기준.",
+         "_desc_full": "슈퍼보너스 릴 애니메이션 phoenix rise super bonus", "url": f"{_base}/GS-1004"},
+        {"key": "GS-1005", "summary": "Aztec Treasure — 누적 잭팟 금액 실시간 업데이트 안 됨", "status": "완료",
+         "type": "Bug", "priority": "Medium", "assignee": "이서연", "updated": dw(0), "created": dw(0),
+         "resolved": dw(0), "game": "Aztec Treasure", "is_sb": False,
+         "description": "잭팟 금액이 30초마다 갱신되어야 하나 페이지 새로고침 전까지 고정됨.",
+         "_desc_full": "잭팟 누적 업데이트 aztec treasure jackpot", "url": f"{_base}/GS-1005"},
+        # 지난 주 이슈
+        {"key": "GS-0991", "summary": "Dragon Fortune — 무료 스핀 횟수 카운터 오류", "status": "완료",
+         "type": "Bug", "priority": "주요", "assignee": "김민준", "updated": d(5), "created": d(8),
+         "resolved": d(5), "game": "Dragon Fortune", "is_sb": False,
+         "description": "무료 스핀 잔여 횟수가 1 적게 표시되는 오프바이원 버그.",
+         "_desc_full": "무료 스핀 카운터 dragon fortune free spin off-by-one", "url": f"{_base}/GS-0991"},
+        {"key": "GS-0992", "summary": "Lucky Gems — 와일드 심볼 배당 계산 오류", "status": "완료",
+         "type": "Bug", "priority": "주요", "assignee": "박지호", "updated": d(6), "created": d(9),
+         "resolved": d(6), "game": "Lucky Gems", "is_sb": False,
+         "description": "와일드 2개 포함 콤보에서 배당이 기획서 대비 50% 낮게 지급됨.",
+         "_desc_full": "와일드 배당 계산 lucky gems wild payout", "url": f"{_base}/GS-0992"},
+        {"key": "GS-0985", "summary": "Gold Rush — 로딩 화면 스피너 무한 루프", "status": "완료",
+         "type": "Bug", "priority": "Medium", "assignee": "최유진", "updated": d(10), "created": d(12),
+         "resolved": d(10), "game": "Gold Rush", "is_sb": False,
+         "description": "네트워크 재연결 후 로딩 스피너가 해제되지 않아 게임 진입 불가.",
+         "_desc_full": "로딩 스피너 무한 루프 gold rush loading", "url": f"{_base}/GS-0985"},
+        {"key": "GS-0980", "summary": "Phoenix Rise — 사운드 설정 초기화 버그", "status": "완료",
+         "type": "Bug", "priority": "사소", "assignee": "이서연", "updated": d(14), "created": d(15),
+         "resolved": d(14), "game": "Phoenix Rise", "is_sb": False,
+         "description": "게임 재진입 시 이전 사운드 on/off 설정이 초기화됨.",
+         "_desc_full": "사운드 설정 초기화 phoenix rise sound reset", "url": f"{_base}/GS-0980"},
+        # 태스크/스토리
+        {"key": "GS-0970", "summary": "Dragon Fortune v2.1 QA 계획서 작성", "status": "완료",
+         "type": "Task", "priority": "Medium", "assignee": "김민준", "updated": d(20), "created": d(22),
+         "resolved": d(20), "game": "Dragon Fortune", "is_sb": False,
+         "description": "v2.1 신규 피처(프리스핀 멀티플라이어) 대상 TC 초안 작성.",
+         "_desc_full": "qa 계획서 tc dragon fortune v2.1", "url": f"{_base}/GS-0970"},
+        {"key": "GS-0960", "summary": "Lucky Gems 릴리즈 리포트 작성", "status": "완료",
+         "type": "Task", "priority": "Medium", "assignee": "이서연", "updated": d(25), "created": d(26),
+         "resolved": d(25), "game": "Lucky Gems", "is_sb": False,
+         "description": "1.3.0 릴리즈 QA 완료 리포트 Confluence 업로드.",
+         "_desc_full": "릴리즈 리포트 lucky gems release report confluence", "url": f"{_base}/GS-0960"},
+        {"key": "GS-0950", "summary": "Aztec Treasure 회귀 테스트 완료", "status": "진행 중",
+         "type": "Story", "priority": "Medium", "assignee": "박지호", "updated": d(3), "created": d(7),
+         "resolved": None, "game": "Aztec Treasure", "is_sb": False,
+         "description": "2.0.0 회귀 TC 전체 항목 검증 진행 중. 잔여 30%.",
+         "_desc_full": "회귀 테스트 aztec treasure regression test", "url": f"{_base}/GS-0950"},
+        {"key": "GS-0940", "summary": "Gold Rush — 어드민 강제종료 기능 검증", "status": "완료",
+         "type": "Task", "priority": "사소", "assignee": "최유진", "updated": d(18), "created": d(20),
+         "resolved": d(18), "game": "Gold Rush", "is_sb": False,
+         "description": "어드민 콘솔에서 게임 세션 강제종료 후 잔액 복원 검증.",
+         "_desc_full": "어드민 강제종료 gold rush admin session", "url": f"{_base}/GS-0940"},
+        {"key": "GS-0930", "summary": "Phoenix Rise Super Bonus TC 작성", "status": "완료",
+         "type": "Task", "priority": "Medium", "assignee": "김민준", "updated": d(30), "created": d(32),
+         "resolved": d(30), "game": "Phoenix Rise", "is_sb": True,
+         "description": "Super Bonus 피처 전체 TC 작성 및 팀 리뷰 완료.",
+         "_desc_full": "tc 작성 슈퍼보너스 phoenix rise super bonus", "url": f"{_base}/GS-0930"},
+        {"key": "GS-0920", "summary": "Dragon Fortune — 멀티플라이어 수식 검증", "status": "완료",
+         "type": "Story", "priority": "주요", "assignee": "이서연", "updated": d(35), "created": d(40),
+         "resolved": d(35), "game": "Dragon Fortune", "is_sb": False,
+         "description": "Math Model 대비 멀티플라이어 배당 수식 검증. 모두 일치 확인.",
+         "_desc_full": "멀티플라이어 수식 검증 dragon fortune math model", "url": f"{_base}/GS-0920"},
+    ]
+    for item in issues:
+        item.setdefault("_search_text", (item["summary"] + " " + item.get("description", "")).lower())
+    return issues
+
+
+def _make_demo_confluence() -> List[Dict]:
+    _domain = os.getenv("ATLASSIAN_DOMAIN", "example.atlassian.net")
+    _base = f"https://{_domain}/wiki"
+    return [
+        {"id": "c001", "title": "Dragon Fortune QA 체크리스트 v2.1", "space": "GM",
+         "url": f"{_base}/spaces/GM/pages/c001",
+         "_search_text": "dragon fortune qa 체크리스트 v2.1"},
+        {"id": "c002", "title": "Lucky Gems 릴리즈 리포트 1.3.0", "space": "GM",
+         "url": f"{_base}/spaces/GM/pages/c002",
+         "_search_text": "lucky gems 릴리즈 리포트 1.3.0 release"},
+        {"id": "c003", "title": "Gold Rush 버그 리포트 — 2026 Q1", "space": "GM",
+         "url": f"{_base}/spaces/GM/pages/c003",
+         "_search_text": "gold rush 버그 리포트 2026 q1 bug"},
+        {"id": "c004", "title": "Phoenix Rise Super Bonus TC 문서", "space": "GM",
+         "url": f"{_base}/spaces/GM/pages/c004",
+         "_search_text": "phoenix rise super bonus tc 문서"},
+        {"id": "c005", "title": "Aztec Treasure 회귀 테스트 결과", "space": "GM",
+         "url": f"{_base}/spaces/GM/pages/c005",
+         "_search_text": "aztec treasure 회귀 테스트 결과 regression"},
+        {"id": "c006", "title": "GS QA 팀 온보딩 가이드", "space": "GM",
+         "url": f"{_base}/spaces/GM/pages/c006",
+         "_search_text": "gs qa 팀 온보딩 가이드 onboarding"},
+        {"id": "c007", "title": "슬롯 게임 크래시 대응 매뉴얼", "space": "CVS",
+         "url": f"{_base}/spaces/CVS/pages/c007",
+         "_search_text": "슬롯 게임 크래시 대응 매뉴얼 crash"},
+        {"id": "c008", "title": "잭팟 시스템 QA 가이드라인", "space": "CVS",
+         "url": f"{_base}/spaces/CVS/pages/c008",
+         "_search_text": "잭팟 시스템 qa 가이드라인 jackpot"},
+    ]
+
+
 # ── Cache (L38~246) ───────────────────────────────────────────────────────────
 # CACHE 딕셔너리, Sheets 초기 로드 (_load_contents_sheet, _load_sheet_tab_map,
 # _load_ctd_game_info), _load_cache(), 1시간 자동갱신 루프
@@ -48,6 +186,9 @@ CACHE: dict = {
     "sheet_games": {},      # game_code.lower()/game_name.lower() -> {game_id, game_name, game_code, game_type}
     "last_updated": None,   # datetime | None
     "loading": False,
+    "jira_error": None,        # None = 정상, str = 오류 메시지
+    "confluence_error": None,
+    "mcp_error": None,
     "sound_tabs": {},       # tab_title_lower -> gid  (사운드 시트 탭 맵)
     "direction_tabs": {},   # tab_title_lower -> gid  (연출 리스트 탭 맵)
     "ctd_game_info": [],    # [{row_num, game_id_str, game_name, game_title}]
@@ -170,13 +311,50 @@ async def _load_cache() -> None:
     CACHE["loading"] = True
     loop = asyncio.get_event_loop()
 
+    # 데모 모드: 샘플 데이터를 직접 로드하고 외부 연결 생략
+    if _DEMO_MODE:
+        CACHE["jira"] = _make_demo_jira()
+        CACHE["confluence"] = _make_demo_confluence()
+        CACHE["game_code_map"] = {
+            "dragonfortune": "Dragon Fortune",
+            "luckygems": "Lucky Gems",
+            "goldrush": "Gold Rush",
+            "phoenixrise": "Phoenix Rise",
+            "aztectreasure": "Aztec Treasure",
+        }
+        CACHE["game_list"] = [
+            {"game_code": "dragonfortune", "game_name": "Dragon Fortune"},
+            {"game_code": "luckygems", "game_name": "Lucky Gems"},
+            {"game_code": "goldrush", "game_name": "Gold Rush"},
+            {"game_code": "phoenixrise", "game_name": "Phoenix Rise"},
+            {"game_code": "aztectreasure", "game_name": "Aztec Treasure"},
+        ]
+        CACHE["jira_error"] = None
+        CACHE["confluence_error"] = None
+        CACHE["mcp_error"] = None
+        CACHE["last_updated"] = datetime.now()
+        CACHE["loading"] = False
+        print("[Cache] 데모 모드 — 샘플 데이터 로드 완료")
+        return
+
     async def _fetch_jira():
-        data = await loop.run_in_executor(_executor, fetch_all_jira)
-        CACHE["jira"] = data
+        try:
+            data = await loop.run_in_executor(_executor, fetch_all_jira)
+            CACHE["jira"] = data
+            CACHE["jira_error"] = None
+            await loop.run_in_executor(_executor, _detect_critical_bugs, data)
+        except Exception as e:
+            CACHE["jira_error"] = str(e)
+            print(f"[Cache] Jira 연결 실패: {e}")
 
     async def _fetch_confluence():
-        data = await loop.run_in_executor(_executor, fetch_all_confluence)
-        CACHE["confluence"] = data
+        try:
+            data = await loop.run_in_executor(_executor, fetch_all_confluence)
+            CACHE["confluence"] = data
+            CACHE["confluence_error"] = None
+        except Exception as e:
+            CACHE["confluence_error"] = str(e)
+            print(f"[Cache] Confluence 연결 실패: {e}")
 
     async def _fetch_game_codes():
         def _load():
@@ -193,7 +371,7 @@ async def _load_cache() -> None:
                     if entry.get("game_code")
                 }
                 games = list(seen.values())
-                return code_map, games, sheet_map
+                return code_map, games, sheet_map, True   # mcp_failed=True
             import json as _json
             games = _json.loads(raw).get("results", [])
             code_map = {g["game_code"].lower(): g["game_name"] for g in games if g.get("game_code") and g.get("game_name")}
@@ -202,11 +380,12 @@ async def _load_cache() -> None:
                 if entry.get("game_code") and entry["game_code"].lower() == key:
                     if key not in code_map:
                         code_map[key] = entry["game_name"]
-            return code_map, games, sheet_map
-        code_map, games, sheet_map = await loop.run_in_executor(_executor, _load)
+            return code_map, games, sheet_map, False  # mcp_failed=False
+        code_map, games, sheet_map, mcp_failed = await loop.run_in_executor(_executor, _load)
         CACHE["game_code_map"] = code_map
         CACHE["game_list"] = games
         CACHE["sheet_games"] = sheet_map
+        CACHE["mcp_error"] = "MCP SSE 서버 연결 실패" if mcp_failed else None
         print(f"[Cache] 게임 코드 맵 로드 완료 — MCP+시트 합계 {len(code_map)}개")
 
     async def _fetch_doc_tabs():
@@ -221,14 +400,17 @@ async def _load_cache() -> None:
         CACHE["ctd_game_info"]  = ctd_info
         print(f"[Cache] 문서 탭 캐시 완료 — Sound {len(sound_tabs)}탭 / 연출 {len(direction_tabs)}탭 / CTD {len(ctd_info)}행")
 
-    try:
-        await asyncio.gather(_fetch_jira(), _fetch_confluence(), _fetch_game_codes(), _fetch_doc_tabs())
-        CACHE["last_updated"] = datetime.now()
+    async def _detect_notifs():
+        await loop.run_in_executor(_executor, _detect_schedule_notifications)
+
+    await asyncio.gather(_fetch_jira(), _fetch_confluence(), _fetch_game_codes(), _fetch_doc_tabs(), _detect_notifs())
+    CACHE["last_updated"] = datetime.now()
+    errs = [k for k in ("jira_error", "confluence_error", "mcp_error") if CACHE.get(k)]
+    if errs:
+        print(f"[Cache] 갱신 완료 (일부 오류: {errs}) — Jira {len(CACHE['jira'])}건 / Confluence {len(CACHE['confluence'])}건")
+    else:
         print(f"[Cache] 갱신 완료 — Jira {len(CACHE['jira'])}건 / Confluence {len(CACHE['confluence'])}건")
-    except Exception as e:
-        print(f"[Cache] 갱신 실패: {e}")
-    finally:
-        CACHE["loading"] = False
+    CACHE["loading"] = False
 
 
 async def _auto_refresh_loop() -> None:
@@ -241,7 +423,8 @@ async def _auto_refresh_loop() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 시작 시 캐시 로드 + 자동 갱신 루프 시작
+    # DB 초기화 (JSON 마이그레이션 포함) → 캐시 로드 → 자동 갱신 루프
+    _init_db()
     asyncio.create_task(_load_cache())
     asyncio.create_task(_auto_refresh_loop())
     yield
@@ -277,6 +460,8 @@ async def presentation():
 
 @app.get("/api/me")
 async def api_me():
+    if _DEMO_MODE:
+        return JSONResponse({"name": "Demo User", "initials": "DU"})
     from search import ATLASSIAN_EMAIL
     raw = ATLASSIAN_EMAIL.split("@")[0] if ATLASSIAN_EMAIL else "unknown"
     parts = raw.replace(".", " ").split()
@@ -297,6 +482,10 @@ async def api_status():
             CACHE["last_updated"].strftime("%Y-%m-%d %H:%M:%S")
             if CACHE["last_updated"] else None
         ),
+        "jira_error": CACHE.get("jira_error"),
+        "confluence_error": CACHE.get("confluence_error"),
+        "mcp_error": CACHE.get("mcp_error"),
+        "demo_mode": _DEMO_MODE,
     })
 
 
@@ -326,6 +515,14 @@ async def api_search(q: str, sources: str = "all"):
     if not q.strip():
         return JSONResponse({"jira": [], "confluence": [], "drive": []})
 
+    warnings: List[str] = []
+    if CACHE.get("jira_error"):
+        warnings.append("Jira 연결 불가 — 검색 결과가 불완전할 수 있습니다")
+    if CACHE.get("confluence_error") and sources in ("all", "fast"):
+        warnings.append("Confluence 연결 불가 — 문서 결과가 표시되지 않습니다")
+    if CACHE.get("mcp_error") and sources == "all":
+        warnings.append("Drive/MCP 연결 불가 — Drive 결과가 표시되지 않습니다")
+
     query = q.strip()
     loop = asyncio.get_event_loop()
 
@@ -343,6 +540,7 @@ async def api_search(q: str, sources: str = "all"):
             "confluence": [clean(r) for r in conf],
             "slack": slack,
             "drive": [],
+            "warnings": warnings,
         })
 
     conf_results = search_confluence_local(CACHE["confluence"], query)
@@ -427,6 +625,7 @@ async def api_search(q: str, sources: str = "all"):
         "confluence": [clean(r) for r in conf_results],
         "slack": slack_results,
         "drive": drive_results,
+        "warnings": warnings,
     })
 
 
@@ -647,6 +846,230 @@ async def api_tc_progress(sheet_id: str, game_type: str = ""):
     return JSONResponse(result)
 
 
+# ── SQLite DB ────────────────────────────────────────────────────────────────
+
+_DB_PATH = Path(__file__).parent / "qa.db"
+_DB_LOCK = threading.Lock()
+
+_DB_SCHEMA = """
+PRAGMA journal_mode=WAL;
+PRAGMA foreign_keys=ON;
+
+CREATE TABLE IF NOT EXISTS schedules (
+    id            TEXT PRIMARY KEY,
+    game_name     TEXT NOT NULL DEFAULT '',
+    type          TEXT NOT NULL DEFAULT '',
+    assignee      TEXT NOT NULL DEFAULT '',
+    qa_start      TEXT NOT NULL DEFAULT '',
+    qa_end        TEXT NOT NULL DEFAULT '',
+    tc_end        TEXT DEFAULT '',
+    status        TEXT DEFAULT 'active',
+    memo          TEXT DEFAULT '',
+    created_at    TEXT NOT NULL DEFAULT '',
+    qa_sheet_id   TEXT DEFAULT '',
+    sheet_searched INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id          TEXT PRIMARY KEY,
+    type        TEXT NOT NULL,
+    game        TEXT NOT NULL,
+    badge_text  TEXT NOT NULL,
+    badge_cls   TEXT NOT NULL,
+    sub         TEXT NOT NULL,
+    created_at  REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS notification_reads (
+    notif_id TEXT NOT NULL REFERENCES notifications(id) ON DELETE CASCADE,
+    user_id  TEXT NOT NULL,
+    PRIMARY KEY (notif_id, user_id)
+);
+"""
+
+
+def _get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
+
+
+def _init_db() -> None:
+    """DB 초기화 + JSON 파일 마이그레이션 (최초 1회)."""
+    with _DB_LOCK:
+        conn = _get_db()
+        conn.executescript(_DB_SCHEMA)
+        conn.commit()
+
+        # schedule.json → schedules 테이블
+        sched_json = Path(__file__).parent / "schedule.json"
+        if sched_json.exists():
+            try:
+                entries = json.loads(sched_json.read_text(encoding="utf-8"))
+                for e in entries:
+                    conn.execute("""
+                        INSERT OR IGNORE INTO schedules
+                        (id, game_name, type, assignee, qa_start, qa_end, tc_end,
+                         status, memo, created_at, qa_sheet_id, sheet_searched)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, (
+                        e["id"], e.get("game_name",""), e.get("type",""),
+                        e.get("assignee",""), e.get("qa_start",""), e.get("qa_end",""),
+                        e.get("tc_end",""), e.get("status","active"), e.get("memo",""),
+                        e.get("created_at",""), e.get("qa_sheet_id",""),
+                        1 if e.get("_sheet_searched") else 0,
+                    ))
+                conn.commit()
+                sched_json.rename(sched_json.with_suffix(".json.bak"))
+                print(f"[DB] schedule.json → SQLite 마이그레이션 완료 ({len(entries)}건)")
+            except Exception as ex:
+                print(f"[DB] schedule.json 마이그레이션 실패: {ex}")
+
+        # notifications.json → notifications + notification_reads 테이블
+        notif_json = Path(__file__).parent / "notifications.json"
+        if notif_json.exists():
+            try:
+                notifs = json.loads(notif_json.read_text(encoding="utf-8"))
+                for n in notifs:
+                    badge = n.get("badge") or {}
+                    conn.execute("""
+                        INSERT OR IGNORE INTO notifications
+                        (id, type, game, badge_text, badge_cls, sub, created_at)
+                        VALUES (?,?,?,?,?,?,?)
+                    """, (n["id"], n["type"], n["game"],
+                          badge.get("text",""), badge.get("cls",""),
+                          n["sub"], n.get("created_at", 0)))
+                    for uid in (n.get("read_by") or []):
+                        conn.execute(
+                            "INSERT OR IGNORE INTO notification_reads VALUES (?,?)",
+                            (n["id"], uid))
+                conn.commit()
+                notif_json.rename(notif_json.with_suffix(".json.bak"))
+                print(f"[DB] notifications.json → SQLite 마이그레이션 완료 ({len(notifs)}건)")
+            except Exception as ex:
+                print(f"[DB] notifications.json 마이그레이션 실패: {ex}")
+
+        conn.close()
+
+
+# ── Notifications ────────────────────────────────────────────────────────────
+
+_NOTIF_TTL_DAYS = 3
+
+
+def _add_notif(notif_id: str, type_: str, game: str, badge_text: str, badge_cls: str, sub: str) -> None:
+    """알림 추가. 중복 방지 + 3일 TTL 만료 제거."""
+    cutoff_ts = datetime.now().timestamp() - _NOTIF_TTL_DAYS * 86400
+    with _DB_LOCK:
+        conn = _get_db()
+        try:
+            conn.execute("DELETE FROM notifications WHERE created_at < ?", (cutoff_ts,))
+            conn.execute("""
+                INSERT OR IGNORE INTO notifications (id, type, game, badge_text, badge_cls, sub, created_at)
+                VALUES (?,?,?,?,?,?,?)
+            """, (notif_id, type_, game, badge_text, badge_cls, sub, datetime.now().timestamp()))
+            conn.commit()
+        finally:
+            conn.close()
+
+def _prev_biz_day(date_str: str) -> Optional[str]:
+    """qa_end 기준 영업일 전날 (주말 건너뜀)."""
+    try:
+        d = date.fromisoformat(date_str) - timedelta(days=1)
+        while d.weekday() >= 5:
+            d -= timedelta(days=1)
+        return d.isoformat()
+    except Exception:
+        return None
+
+_SCHED_STATUS_LABEL = {
+    "pending": "QA 대기", "tc": "TC 작성중", "testing": "테스트중",
+    "needs_action": "조치 필요", "done": "완료", "hold": "보류", "extended": "연장",
+}
+
+
+def _detect_critical_bugs(issues: List[dict]) -> None:
+    """신규 Critical 버그를 DB에 추가 (캐시 갱신 시 호출)."""
+    cutoff = (date.today() - timedelta(days=3)).isoformat()
+    for issue in issues:
+        if issue.get("priority") not in ("주요", "Highest"):
+            continue
+        if issue.get("type") != "Bug":
+            continue
+        if (issue.get("created") or "") < cutoff:
+            continue
+        _add_notif(
+            f"bug_{issue['key']}", "bug",
+            issue.get("game") or issue["summary"][:20],
+            "Critical", "red", "새 Critical 버그 이슈가 등록됐어요",
+        )
+
+
+def _detect_schedule_notifications() -> None:
+    """D-1 마감 임박 / 기간 초과 알림 생성 (캐시 갱신 시 호출)."""
+    try:
+        entries = _read_schedule()
+        today_str = date.today().isoformat()
+        today_dt = date.today()
+
+        for e in entries:
+            cs = _compute_status(e, today_dt)
+            qa_end = e.get("qa_end", "")
+            overdue_id = f"overdue_{e['id']}"
+
+            # D-1 (영업일 기준)
+            if qa_end and today_str == _prev_biz_day(qa_end) and cs not in ("done", "hold", "extended"):
+                _add_notif(f"d1_{e['id']}_{qa_end}", "schedule", e["game_name"],
+                           "마감 D-1", "amber", "QA 마감이 내일이에요 (영업일 기준)")
+
+            # 기간 초과 D+1 ~ D+3
+            if cs == "needs_action" and qa_end:
+                try:
+                    days_over = (today_dt - date.fromisoformat(qa_end)).days
+                except Exception:
+                    days_over = 0
+                if 1 <= days_over <= 3:
+                    badge_text = f"D+{days_over} 경과"
+                    with _DB_LOCK:
+                        conn = _get_db()
+                        try:
+                            exists = conn.execute(
+                                "SELECT badge_text FROM notifications WHERE id=?", (overdue_id,)
+                            ).fetchone()
+                            if exists:
+                                if exists["badge_text"] != badge_text:
+                                    conn.execute("UPDATE notifications SET badge_text=? WHERE id=?",
+                                                 (badge_text, overdue_id))
+                                    conn.commit()
+                            else:
+                                conn.execute("""
+                                    INSERT OR IGNORE INTO notifications
+                                    (id, type, game, badge_text, badge_cls, sub, created_at)
+                                    VALUES (?,?,?,?,?,?,?)
+                                """, (overdue_id, "schedule", e["game_name"],
+                                      badge_text, "red", "QA 마감일이 지났어요",
+                                      datetime.now().timestamp()))
+                                conn.commit()
+                        finally:
+                            conn.close()
+                elif days_over > 3:
+                    with _DB_LOCK:
+                        conn = _get_db()
+                        conn.execute("DELETE FROM notifications WHERE id=?", (overdue_id,))
+                        conn.commit()
+                        conn.close()
+            else:
+                with _DB_LOCK:
+                    conn = _get_db()
+                    conn.execute("DELETE FROM notifications WHERE id=?", (overdue_id,))
+                    conn.commit()
+                    conn.close()
+
+    except Exception as ex:
+        print(f"[Notif] 스케줄 알림 감지 오류: {ex}")
+
+
 # ── Schedule / Game Links (L590~1185) ─────────────────────────────────────────
 # [스케줄 헬퍼] _schedule_path, _compute_status, _fetch_game_titles
 # [게임 문서]   GET /api/game_titles  /api/game_lookup  /api/game_links  /api/game_studio
@@ -658,10 +1081,6 @@ SLOT_SHEET_ID = "1ENqN1xSqOvaid38Wpld0Ma91em-L5EgPNZOUQTTWJGQ"
 _MONTH_MAP = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5,
               "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10,
               "Nov": 11, "Dec": 12}
-
-
-def _schedule_path() -> Path:
-    return Path(__file__).parent / "schedule.json"
 
 
 def _events_path() -> Path:
@@ -701,17 +1120,40 @@ def _write_events(data: List[dict]) -> None:
 
 
 def _read_schedule() -> List[dict]:
-    p = _schedule_path()
-    if not p.exists():
-        return []
+    conn = _get_db()
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
-    except Exception:
-        return []
+        rows = conn.execute("SELECT * FROM schedules ORDER BY qa_start ASC, created_at ASC").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
 
 
 def _write_schedule(data: List[dict]) -> None:
-    _schedule_path().write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    """전체 교체 (기존 read-modify-write 패턴 호환)."""
+    with _DB_LOCK:
+        conn = _get_db()
+        try:
+            conn.execute("BEGIN EXCLUSIVE")
+            conn.execute("DELETE FROM schedules")
+            for e in data:
+                conn.execute("""
+                    INSERT INTO schedules
+                    (id, game_name, type, assignee, qa_start, qa_end, tc_end,
+                     status, memo, created_at, qa_sheet_id, sheet_searched)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                """, (
+                    e["id"], e.get("game_name",""), e.get("type",""),
+                    e.get("assignee",""), e.get("qa_start",""), e.get("qa_end",""),
+                    e.get("tc_end",""), e.get("status","active"), e.get("memo",""),
+                    e.get("created_at",""), e.get("qa_sheet_id",""),
+                    1 if e.get("sheet_searched") or e.get("_sheet_searched") else 0,
+                ))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
 
 def _compute_status(entry: dict, today: date) -> str:
@@ -1154,7 +1596,7 @@ def _autofill_sheet_id(entry: dict) -> None:
     SB 게임: GWS Drive 검색 (공유 드라이브 포함)
     일반 게임: get_game MCP → 실패 시 GWS Drive 검색 fallback
     """
-    if entry.get("qa_sheet_id") or entry.get("_sheet_searched"):
+    if entry.get("qa_sheet_id") or entry.get("sheet_searched"):
         return
     game_name = entry.get("game_name", "").replace("SB_", "").strip()
     if not game_name:
@@ -1167,7 +1609,7 @@ def _autofill_sheet_id(entry: dict) -> None:
         sheet_id = _drive_search_sheet(words + ["SB"])
         if sheet_id:
             entry["qa_sheet_id"] = sheet_id
-        entry["_sheet_searched"] = True
+        entry["sheet_searched"] = 1
         return
 
     # 일반 게임: MCP get_game 우선
@@ -1189,7 +1631,7 @@ def _autofill_sheet_id(entry: dict) -> None:
     if sheet_id:
         entry["qa_sheet_id"] = sheet_id
     # 찾든 못 찾든 재검색 방지 마킹
-    entry["_sheet_searched"] = True
+    entry["sheet_searched"] = 1
 
 
 @app.get("/api/schedule")
@@ -1198,7 +1640,7 @@ async def api_schedule_get():
     entries = _read_schedule()
     today = date.today()
     loop = asyncio.get_event_loop()
-    missing = [e for e in entries if not e.get("qa_sheet_id") and not e.get("_sheet_searched")]
+    missing = [e for e in entries if not e.get("qa_sheet_id") and not e.get("sheet_searched")]
     if missing:
         await asyncio.gather(*[
             loop.run_in_executor(_executor, _autofill_sheet_id, e)
@@ -1243,6 +1685,10 @@ async def api_schedule_post(body: ScheduleEntry):
     entries.append(new_entry)
     _write_schedule(entries)
     new_entry["computed_status"] = _compute_status(new_entry, date.today())
+    _add_notif(
+        f"new_sched_{new_entry['id']}", "status", body.game_name,
+        "일정 추가", "blue", "QA 일정이 새로 등록됐어요",
+    )
     return JSONResponse(new_entry)
 
 
@@ -1263,12 +1709,39 @@ async def api_schedule_put(entry_id: str, body: ScheduleUpdate):
     entries = _read_schedule()
     for e in entries:
         if e.get("id") == entry_id:
+            old_status   = e.get("status", "")
+            old_assignee = e.get("assignee", "")
+            old_dates    = {f: e.get(f, "") for f in ("qa_start", "qa_end", "tc_end")}
+            old_memo     = e.get("memo", "")
+            game_name    = e.get("game_name", "")
+
             for field in ("game_name", "type", "assignee", "qa_start", "qa_end", "tc_end", "status", "memo"):
                 val = getattr(body, field)
                 if val is not None:
                     e[field] = val
             _write_schedule(entries)
             e["computed_status"] = _compute_status(e, date.today())
+
+            # 변경 알림 생성
+            if body.status is not None and body.status != old_status:
+                from_ = _SCHED_STATUS_LABEL.get(old_status, old_status)
+                to_   = _SCHED_STATUS_LABEL.get(body.status, body.status)
+                _add_notif(f"status_{entry_id}_{old_status}_{body.status}", "status", game_name,
+                           "상태 변경", "blue", f"{from_} → {to_}으로 변경됐어요")
+            if body.assignee is not None and body.assignee != old_assignee:
+                msg = f"{body.assignee}님으로 담당자가 지정됐어요" if body.assignee else "담당자가 변경됐어요"
+                _add_notif(f"assignee_{entry_id}_{body.assignee}", "status", game_name,
+                           "담당자 변경", "blue", msg)
+            for f, label in (("qa_start", "QA 시작일"), ("qa_end", "QA 종료일"), ("tc_end", "TC 종료일")):
+                new_val = getattr(body, f)
+                if new_val is not None and new_val != old_dates[f]:
+                    _add_notif(f"datechange_{entry_id}_{f}_{new_val}", "schedule", game_name,
+                               "일정 변경", "amber", f"{label}이 {new_val}로 변경됐어요")
+            if body.memo is not None and body.memo != old_memo and body.memo:
+                preview = body.memo[:30] + ("…" if len(body.memo) > 30 else "")
+                _add_notif(f"schedmemo_{entry_id}_{body.memo[:30]}", "status", game_name,
+                           "메모", "blue", f"메모가 추가됐어요: {preview}")
+
             return JSONResponse(e)
     return JSONResponse({"error": "not found"}, status_code=404)
 
@@ -1277,10 +1750,74 @@ async def api_schedule_put(entry_id: str, body: ScheduleUpdate):
 async def api_schedule_delete(entry_id: str):
     """QA 일정 삭제."""
     entries = _read_schedule()
-    new_entries = [e for e in entries if e.get("id") != entry_id]
-    if len(new_entries) == len(entries):
+    target = next((e for e in entries if e.get("id") == entry_id), None)
+    if target is None:
         return JSONResponse({"error": "not found"}, status_code=404)
-    _write_schedule(new_entries)
+    _write_schedule([e for e in entries if e.get("id") != entry_id])
+    _add_notif(f"del_sched_{entry_id}", "status", target.get("game_name", ""),
+               "일정 삭제", "blue", "QA 일정이 삭제됐어요")
+    return JSONResponse({"ok": True})
+
+
+# ── Notification API ─────────────────────────────────────────────────────────
+
+@app.get("/api/notifications")
+async def api_notifications_get(user_id: str = ""):
+    """알림 목록 반환. read 필드는 user_id 기준."""
+    cutoff_ts = datetime.now().timestamp() - _NOTIF_TTL_DAYS * 86400
+    conn = _get_db()
+    try:
+        rows = conn.execute("""
+            SELECT n.id, n.type, n.game, n.badge_text, n.badge_cls, n.sub, n.created_at,
+                   EXISTS(
+                       SELECT 1 FROM notification_reads r
+                       WHERE r.notif_id = n.id AND r.user_id = ?
+                   ) AS is_read
+            FROM notifications n
+            WHERE n.created_at >= ?
+            ORDER BY n.created_at DESC
+        """, (user_id, cutoff_ts)).fetchall()
+    finally:
+        conn.close()
+    return JSONResponse([{
+        "id": r["id"], "type": r["type"], "game": r["game"],
+        "badge": {"text": r["badge_text"], "cls": r["badge_cls"]},
+        "sub": r["sub"], "created_at": r["created_at"], "read": bool(r["is_read"]),
+    } for r in rows])
+
+
+@app.post("/api/notifications/read/{notif_id}")
+async def api_notifications_read(notif_id: str, user_id: str = ""):
+    """알림 단건 읽음 처리 (user_id 기준)."""
+    if not user_id:
+        return JSONResponse({"ok": False, "error": "user_id required"}, status_code=400)
+    with _DB_LOCK:
+        conn = _get_db()
+        try:
+            conn.execute("INSERT OR IGNORE INTO notification_reads VALUES (?,?)", (notif_id, user_id))
+            conn.commit()
+        finally:
+            conn.close()
+    return JSONResponse({"ok": True})
+
+
+@app.post("/api/notifications/read_all")
+async def api_notifications_read_all(user_id: str = ""):
+    """전체 알림 읽음 처리 (user_id 기준)."""
+    if not user_id:
+        return JSONResponse({"ok": False, "error": "user_id required"}, status_code=400)
+    cutoff_ts = datetime.now().timestamp() - _NOTIF_TTL_DAYS * 86400
+    with _DB_LOCK:
+        conn = _get_db()
+        try:
+            ids = [r[0] for r in conn.execute(
+                "SELECT id FROM notifications WHERE created_at >= ?", (cutoff_ts,)
+            ).fetchall()]
+            for nid in ids:
+                conn.execute("INSERT OR IGNORE INTO notification_reads VALUES (?,?)", (nid, user_id))
+            conn.commit()
+        finally:
+            conn.close()
     return JSONResponse({"ok": True})
 
 

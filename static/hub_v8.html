@@ -214,6 +214,7 @@
         <div style="width:1px;height:18px;background:var(--bd);margin:0 2px" id="sr-divider" style="display:none"></div>
         <div class="sr-bug-toggle" id="sr-bug-toggle" onclick="srToggleBug(this)" style="display:none">⚠ 버그만</div>
       </div>
+      <div id="sr-warnings" style="display:none;margin-bottom:8px;padding:8px 12px;border-radius:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);font-size:11px;color:var(--red);flex-direction:column;gap:4px"></div>
       <div id="sr-results"></div>
     </div>
 
@@ -1124,6 +1125,13 @@ function _renderSR(q,data){
   _srData=data;
   _srFilter='all';
   _srBugOnly=false;
+  // 연결 오류 경고 배너
+  const warnEl=document.getElementById('sr-warnings');
+  if(warnEl){
+    const warns=data.warnings||[];
+    warnEl.style.display=warns.length?'flex':'none';
+    warnEl.innerHTML=warns.map(w=>`<span>⚠ ${w}</span>`).join('');
+  }
   // 탭 카운트 업데이트
   const jira=data.jira||[],conf=data.confluence||[],drive=data.drive||[],slack=data.slack||[];
   const total=jira.length+conf.length+drive.length+slack.length;
@@ -3098,31 +3106,55 @@ late.forEach(e=>{
   fetch('/api/status')
     .then(r=>r.json())
     .then(d=>{
+      // 데모 모드 배너
+      if(d.demo_mode){
+        let banner=document.getElementById('demo-mode-banner');
+        if(!banner){
+          banner=document.createElement('div');
+          banner.id='demo-mode-banner';
+          banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9998;background:#7c6af7;color:#fff;font-size:12px;font-weight:600;text-align:center;padding:6px 16px;letter-spacing:.2px';
+          banner.innerHTML='데모 모드 — Jira / Confluence / MCP 없이 샘플 데이터로 동작 중입니다. <a href="https://github.com/hyewon-kim-bagel/qa-search#setup" target="_blank" style="color:#e0d9ff;text-decoration:underline;margin-left:8px">설정 방법 →</a>';
+          document.body.prepend(banner);
+          // topbar, sidebar 위치 보정
+          const topbar=document.querySelector('.topbar');
+          const sb=document.querySelector('.sb');
+          if(topbar) topbar.style.top='30px';
+          if(sb) sb.style.top='30px';
+        }
+      }
       if(d.loading&&!d.ready){
         el.innerHTML='캐시 로딩 중… <span style="color:var(--acc)">●</span>';
         setTimeout(loadCacheStat,3000);
+      } else if(!d.loading&&!d.ready){
+        el.innerHTML='<span style="color:var(--red)">⚠ 캐시 로드 실패 — Jira/Confluence 연결을 확인해 주세요</span>';
       } else if(d.ready){
-        el.innerHTML=`Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}건</strong> 로드됨`;
+        const errParts=[];
+        if(d.jira_error) errParts.push('Jira');
+        if(d.confluence_error) errParts.push('Confluence');
+        if(d.mcp_error) errParts.push('Drive');
+        let stat=d.demo_mode
+          ? `샘플 데이터 — Jira <strong style="color:var(--t1)">${d.jira_count}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count}건</strong>`
+          : `Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}건</strong> 로드됨`;
+        if(errParts.length) stat+=` <span style="color:var(--red);font-size:11px">⚠ ${errParts.join('/')} 연결 오류</span>`;
+        el.innerHTML=stat;
       }
     })
     .catch(()=>{el.textContent='서버 연결 오류';});
 })();
 
 // ── Notifications ──
-const _NK='qa_notif_v1';
-const _SK='qa_sched_snap_v1';
-const _NOTIF_TTL=3*86400000; // 3일
-
-function _nLoad(){try{return JSON.parse(localStorage.getItem(_NK)||'[]');}catch{return[];}}
-function _nSave(d){localStorage.setItem(_NK,JSON.stringify(d));}
-function _sLoad(){try{return JSON.parse(localStorage.getItem(_SK)||'{}');}catch{return{};}}
-function _sSave(d){localStorage.setItem(_SK,JSON.stringify(d));}
-
-let _NOTIF_DATA=_nLoad();
+function _getMyUserId(){
+  let uid=localStorage.getItem('qa_user_id');
+  if(!uid){uid=crypto.randomUUID();localStorage.setItem('qa_user_id',uid);}
+  return uid;
+}
+let _NOTIF_DATA=[];
 let _notifTab='all',_notifSbTab='all';
 
 function _relTime(ts){
-  const m=Math.floor((Date.now()-ts)/60000);
+  // ts는 서버에서 unix seconds로 저장됨
+  const ms=ts>1e10?ts:ts*1000;
+  const m=Math.floor((Date.now()-ms)/60000);
   if(m<1)return'방금 전';
   if(m<60)return`${m}분 전`;
   const h=Math.floor(m/60);
@@ -3141,17 +3173,6 @@ function _prevBizDay(dateStr){
 
 const _SL={pending:'QA 대기',tc:'TC 작성중',testing:'테스트중',needs_action:'조치 필요',done:'완료',hold:'보류',extended:'연장'};
 
-function _addNotif(id,type,game,badge,sub){
-  if(_NOTIF_DATA.find(n=>n.id===id))return;
-  _NOTIF_DATA.unshift({id,type,game,badge,sub,detectedAt:Date.now(),read:false});
-  _nSave(_NOTIF_DATA);
-}
-
-function _removeNotif(id){
-  const before=_NOTIF_DATA.length;
-  _NOTIF_DATA=_NOTIF_DATA.filter(n=>n.id!==id);
-  if(_NOTIF_DATA.length!==before)_nSave(_NOTIF_DATA);
-}
 
 function _notifUnread(){return _NOTIF_DATA.filter(n=>!n.read).length;}
 function _notifFiltered(tab){return tab==='all'?[..._NOTIF_DATA]:_NOTIF_DATA.filter(n=>n.type===tab);}
@@ -3163,7 +3184,7 @@ function _notifItemHtml(n){
       <div class="ni-title">${n.game}${n.badge?`<span class="ni-badge ${n.badge.cls}">${n.badge.text}</span>`:''}</div>
       <div class="ni-sub">${n.sub}</div>
     </div>
-    <div class="ni-time">${_relTime(n.detectedAt)}</div>
+    <div class="ni-time">${_relTime(n.created_at||0)}</div>
   </div>`;
 }
 
@@ -3194,116 +3215,12 @@ function _notifRenderSb(){
 }
 
 async function _notifDetect(){
-  // 만료 알림 제거 (3일 초과)
-  const cutoff=Date.now()-_NOTIF_TTL;
-  const before=_NOTIF_DATA.length;
-  _NOTIF_DATA=_NOTIF_DATA.filter(n=>n.detectedAt>=cutoff);
-  if(_NOTIF_DATA.length!==before)_nSave(_NOTIF_DATA);
-
-  const today=new Date().toISOString().slice(0,10);
-
-  // 1. Critical 버그 (캐시 갱신 후 신규)
   try{
-    const bugs=await fetch('/api/recent_bugs').then(r=>r.json());
-    const lastCheck=localStorage.getItem('qa_notif_bug_check')||'1970-01-01';
-    for(const b of bugs){
-      if((b.created||'')>lastCheck){
-        _addNotif(`bug_${b.key}`,'bug',b.game||b.summary.slice(0,20),
-          {text:'Critical',cls:'red'},'새 Critical 버그 이슈가 등록됐어요');
-      }
-    }
-    localStorage.setItem('qa_notif_bug_check',today);
+    _NOTIF_DATA=await fetch('/api/notifications?user_id='+encodeURIComponent(_getMyUserId())).then(r=>r.json());
+    _notifRefreshBadge();
+    _notifRenderDrop();
+    if(document.getElementById('notif-sidebar').classList.contains('open'))_notifRenderSb();
   }catch(e){}
-
-  // 2~6. 스케줄 기반 알림
-  try{
-    const entries=await fetch('/api/schedule').then(r=>r.json());
-    const snap=_sLoad();
-    const isFirst=Object.keys(snap).length===0;
-
-    for(const e of entries){
-      const id=e.id;
-      const prev=snap[id];
-      const cs=e.computed_status;
-      const overdueId=`overdue_${id}`;
-
-      // 2. D-1 (영업일 기준)
-      if(today===_prevBizDay(e.qa_end)&&cs!=='done'&&cs!=='hold'&&cs!=='extended'){
-        _addNotif(`d1_${id}_${e.qa_end}`,'schedule',e.game_name,
-          {text:'마감 D-1',cls:'amber'},'QA 마감이 내일이에요 (영업일 기준)');
-      }
-
-      // 6. 초과 경과 (D+1~D+3, 미완료 시)
-      if(cs==='needs_action'){
-        const daysOver=Math.floor((new Date(today)-new Date(e.qa_end))/86400000);
-        if(daysOver>=1&&daysOver<=3){
-          const existing=_NOTIF_DATA.find(n=>n.id===overdueId);
-          if(existing){
-            if(existing.badge.text!==`D+${daysOver} 경과`){
-              existing.badge.text=`D+${daysOver} 경과`;
-              _nSave(_NOTIF_DATA);
-            }
-          }else{
-            _addNotif(overdueId,'schedule',e.game_name,
-              {text:`D+${daysOver} 경과`,cls:'red'},'QA 마감일이 지났어요');
-          }
-        }else if(daysOver>3){
-          _removeNotif(overdueId);
-        }
-      }else{
-        _removeNotif(overdueId);
-      }
-
-      // 신규 스케줄 등록
-      if(!isFirst&&!prev){
-        _addNotif(`new_sched_${id}`,'status',e.game_name,
-          {text:'일정 추가',cls:'blue'},'QA 일정이 새로 등록됐어요');
-      }
-
-      // 3~5. 변경 감지 (최초 스냅샷 로드 시 제외)
-      if(!isFirst&&prev){
-        // 3. 상태 변경
-        if(prev.computed_status!==cs){
-          const from=_SL[prev.computed_status]||prev.computed_status;
-          const to=_SL[cs]||cs;
-          _addNotif(`status_${id}_${prev.computed_status}_${cs}`,'status',e.game_name,
-            {text:'상태 변경',cls:'blue'},`${from} → ${to}으로 변경됐어요`);
-        }
-        // 4. 담당자 변경/지정
-        if(prev.assignee!==e.assignee){
-          _addNotif(`assignee_${id}_${e.assignee}`,'status',e.game_name,
-            {text:'담당자 변경',cls:'blue'},
-            e.assignee?`${e.assignee}님으로 담당자가 지정됐어요`:'담당자가 변경됐어요');
-        }
-        // 5. 일정 변경 (qa_start / qa_end / tc_end)
-        for(const f of['qa_start','qa_end','tc_end']){
-          if(e[f]&&prev[f]!==e[f]){
-            const fl=f==='qa_start'?'QA 시작일':f==='qa_end'?'QA 종료일':'TC 종료일';
-            _addNotif(`datechange_${id}_${f}_${e[f]}`,'schedule',e.game_name,
-              {text:'일정 변경',cls:'amber'},`${fl}이 ${e[f]}로 변경됐어요`);
-          }
-        }
-        // 6. 스케줄 메모 변경
-        const curMemo=e.memo||'';
-        if(prev.memo!==curMemo&&curMemo){
-          _addNotif(`schedmemo_${id}_${curMemo.slice(0,30)}`,'status',e.game_name,
-            {text:'메모',cls:'blue'},`메모가 추가됐어요: ${curMemo.slice(0,30)}${curMemo.length>30?'…':''}`);
-        }
-      }
-
-      // 스냅샷 갱신
-      snap[id]={computed_status:cs,assignee:e.assignee,qa_start:e.qa_start,qa_end:e.qa_end,tc_end:e.tc_end||'',memo:e.memo||''};
-    }
-
-    // 삭제된 엔트리 스냅샷 정리
-    const liveIds=new Set(entries.map(e=>e.id));
-    for(const sid of Object.keys(snap)) if(!liveIds.has(sid)) delete snap[sid];
-    _sSave(snap);
-  }catch(e){}
-
-  _notifRefreshBadge();
-  _notifRenderDrop();
-  if(document.getElementById('notif-sidebar').classList.contains('open'))_notifRenderSb();
 }
 
 function notifToggleDrop(e){
@@ -3329,13 +3246,18 @@ function notifSetSidebarTab(tab,el){
 
 function notifMarkRead(id){
   const n=_NOTIF_DATA.find(x=>x.id===id);
-  if(n&&!n.read){n.read=true;_nSave(_NOTIF_DATA);_notifRefreshBadge();_notifRenderDrop();_notifRenderSb();}
+  if(n&&!n.read){
+    n.read=true;
+    const uid=encodeURIComponent(_getMyUserId());
+    fetch('/api/notifications/read/'+encodeURIComponent(id)+'?user_id='+uid,{method:'POST'}).catch(()=>{});
+    _notifRefreshBadge();_notifRenderDrop();_notifRenderSb();
+  }
 }
 
 function notifReadAll(e){
   e&&e.stopPropagation();
   _NOTIF_DATA.forEach(n=>n.read=true);
-  _nSave(_NOTIF_DATA);
+  fetch('/api/notifications/read_all?user_id='+encodeURIComponent(_getMyUserId()),{method:'POST'}).catch(()=>{});
   _notifRefreshBadge();_notifRenderDrop();_notifRenderSb();
 }
 
