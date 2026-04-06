@@ -42,7 +42,7 @@
     <a class="nav" href="https://auth.bagelcode.com/gamesadmin" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>어드민</a>
   </div>
   <div class="sb-bot">
-    <div class="sb-user" id="sb-user-card">
+    <div class="sb-user" id="sb-user-card" style="cursor:pointer" title="클릭하여 직책 변경">
       <div class="sb-av" id="sb-av">?</div>
       <div>
         <div class="sb-uname" id="sb-uname">...</div>
@@ -51,6 +51,22 @@
     </div>
   </div>
 </aside>
+
+<!-- 직책 변경 모달 -->
+<div id="profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#1e1e2e;border:1px solid #444;border-radius:12px;padding:28px 24px;width:300px;display:flex;flex-direction:column;gap:14px;">
+    <div style="font-size:15px;font-weight:600;color:#fff">직책 설정</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:12px;color:#bbb">직책</label>
+      <input id="profile-role-inp" placeholder="QA Engineer" style="background:#2a2a3a;border:1px solid #555;border-radius:7px;padding:8px 12px;color:#fff;font-size:13px;outline:none;"/>
+      <style>#profile-role-inp::placeholder{color:#888;}</style>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="document.getElementById('profile-modal').style.display='none'" style="background:transparent;border:1px solid #555;color:#aaa;border-radius:7px;padding:7px 16px;font-size:13px;cursor:pointer;">취소</button>
+      <button onclick="saveRole()" style="background:#7c6af7;border:none;color:#fff;border-radius:7px;padding:7px 16px;font-size:13px;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- MAIN -->
 <div class="main-wrap">
@@ -3728,10 +3744,39 @@ function _tourCloseSchedDemo(){
 })();
 
 // ── 프로필 ────────────────────────────────────────────────
-fetch('/api/me').then(r=>r.json()).then(d=>{
-  document.getElementById('sb-uname').textContent = d.name || 'unknown';
-  document.getElementById('sb-av').textContent = d.initials || '?';
-}).catch(()=>{});
+(function initProfile(){
+  const ROLE_KEY = 'qa_role_v1';
+  const saved = localStorage.getItem(ROLE_KEY);
+  if(saved) document.getElementById('sb-urole').textContent = saved;
+
+  fetch('/api/me').then(r=>r.json()).then(d=>{
+    document.getElementById('sb-uname').textContent = d.name || 'unknown';
+    document.getElementById('sb-av').textContent = d.initials || '?';
+  }).catch(()=>{});
+
+  document.getElementById('sb-user-card').addEventListener('click', function(){
+    document.getElementById('profile-role-inp').value = localStorage.getItem(ROLE_KEY) || '';
+    const m = document.getElementById('profile-modal');
+    m.style.display = 'flex';
+    document.getElementById('profile-role-inp').focus();
+  });
+
+  window.saveRole = function(){
+    const role = document.getElementById('profile-role-inp').value.trim();
+    if(!role) return;
+    localStorage.setItem(ROLE_KEY, role);
+    document.getElementById('sb-urole').textContent = role;
+    document.getElementById('profile-modal').style.display = 'none';
+  };
+
+  document.getElementById('profile-modal').addEventListener('click', function(e){
+    if(e.target === this) this.style.display = 'none';
+  });
+
+  document.getElementById('profile-role-inp').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') saveRole();
+  });
+})();
 </script>
 <!-- Notification overlay + sidebar -->
 <!-- ── Tutorial DOM ── -->
