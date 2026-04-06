@@ -1415,15 +1415,14 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
     document.getElementById('pn-meta').innerHTML=`${codeTag}${idTag}${dueTag}`;
   }
 
+  const g={name:baseName};
   _renderMeta(g);
 
   // game_id/tc_prefix가 없으면 contents sheet에서 동적으로 조회
-  if(!g.game_id||!g.tc_prefix){
-    fetch('/api/game_lookup?name='+encodeURIComponent(baseName))
-      .then(r=>r.ok?r.json():null)
-      .then(d=>{if(d&&d.game_id){g.game_id=d.game_id;g.tc_prefix=d.tc_prefix;_renderMeta(g);}})
-      .catch(()=>{});
-  }
+  fetch('/api/game_lookup?name='+encodeURIComponent(baseName))
+    .then(r=>r.ok?r.json():null)
+    .then(d=>{if(d&&d.game_id){g.game_id=d.game_id;g.tc_prefix=d.tc_prefix;_renderMeta(g);}})
+    .catch(()=>{});
 
   // studio 뱃지 — CTD 캐시만 조회해서 빠르게 표시
   const _studioParams=new URLSearchParams({name:baseName});
