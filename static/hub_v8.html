@@ -1418,13 +1418,12 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
   const g={name:baseName};
   _renderMeta(g);
 
-  // game_id/tc_prefix가 없으면 contents sheet에서 동적으로 조회
-  fetch('/api/game_lookup?name='+encodeURIComponent(baseName))
-    .then(r=>r.ok?r.json():null)
-    .then(d=>{if(d&&d.game_id){g.game_id=d.game_id;g.tc_prefix=d.tc_prefix;_renderMeta(g);}})
-    .catch(()=>{});
+  // game_lookup을 먼저 완료 후 game_links 파라미터 구성 (tc_prefix/game_id 필요)
+  const lookupData = await fetch('/api/game_lookup?name='+encodeURIComponent(baseName))
+    .then(r=>r.ok?r.json():null).catch(()=>null);
+  if(lookupData&&lookupData.game_id){g.game_id=lookupData.game_id;g.tc_prefix=lookupData.tc_prefix;_renderMeta(g);}
 
-  // studio 뱃지 — CTD 캐시만 조회해서 빠르게 표시
+  // studio 뱃지
   const _studioParams=new URLSearchParams({name:baseName});
   if(g.tc_prefix) _studioParams.set('tc_prefix',g.tc_prefix);
   if(g.game_id)   _studioParams.set('game_id',String(g.game_id));
@@ -1457,7 +1456,7 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
     if(!alreadyIn) data.drive=[{id:qaSheetId,title:(isSB?baseName+' SB TC':baseName+' TC'),mime_label:'QA 시트',url:tcUrl,from_ontology:true},...(data.drive||[])];
   }
 
-  // game_links 파라미터 구성
+  // game_links 파라미터 구성 (game_lookup 결과 반영)
   const _glParams=new URLSearchParams({name:baseName});
   if(g.tc_prefix) _glParams.set('tc_prefix',g.tc_prefix);
   if(g.game_id)   _glParams.set('game_id',String(g.game_id));
@@ -1490,6 +1489,7 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
     _injectTc(c.fullData,c.fullLinks);
     _renderPanelBody(g,c.fullData,c.fullLinks,false);
   }else{
+    document.getElementById('pn-body').innerHTML='<div style="padding:32px 20px;text-align:center;font-size:12px;color:var(--t3)">불러오는 중…</div>';
     try{
       // 1단계: Jira/Conf/Slack + CTD/SOUND/VFX 즉시 렌더 (GDD/MATH만 로딩 표시)
       const [fastData,fastLinks]=await Promise.all([fastPromise,glFastPromise]);

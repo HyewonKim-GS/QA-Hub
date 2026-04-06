@@ -795,7 +795,12 @@ async def api_game_lookup(name: str):
     """게임명으로 game_id, game_code 조회 (contents sheet 기반).
     패널에서 GAMES 객체에 없는 게임의 ID/코드를 동적으로 채울 때 사용.
     """
-    entry = CACHE.get("sheet_games", {}).get(name.strip().lower())
+    sheet = CACHE.get("sheet_games", {})
+    name_lower = name.strip().lower()
+    # "and" ↔ "&" 양방향 정규화 fallback
+    name_and = name_lower.replace(" & ", " and ").replace("&", " and ")
+    name_amp = name_lower.replace(" and ", " & ")
+    entry = sheet.get(name_lower) or sheet.get(name_and) or sheet.get(name_amp)
     if not entry:
         return JSONResponse({"error": "not found"}, status_code=404)
     tc_prefix = ""
@@ -920,12 +925,17 @@ async def api_game_links(name: str, tc_prefix: str = "", game_id: str = "", is_s
     result: dict = {"gdd": None, "math": None, "sound": None, "direction": None, "ctd": None}
     name_lower = name.lower().strip()
 
-    # tc_prefix가 없으면 sheet_games 캐시에서 자동 보완
+    # tc_prefix가 없으면 sheet_games 캐시에서 자동 보완 (SB 게임은 SB_{name}으로도 조회)
     resolved_prefix = tc_prefix.strip()
     if not resolved_prefix:
+        sb_name_lower = f"sb_{name_lower}"
+        name_and = name_lower.replace(" & ", " and ").replace("&", " and ")
+        name_amp = name_lower.replace(" and ", " & ")
+        _sg = CACHE.get("sheet_games", {})
         sheet_entry = (
-            CACHE.get("sheet_games", {}).get(name_lower)
-            or CACHE.get("sheet_games", {}).get(_norm_tab(name))
+            _sg.get(name_lower) or _sg.get(name_and) or _sg.get(name_amp)
+            or _sg.get(_norm_tab(name))
+            or (_sg.get(sb_name_lower) or _sg.get(f"sb_{name_and}") or _sg.get(f"sb_{name_amp}") if sb else None)
         )
         if sheet_entry and sheet_entry.get("game_code"):
             code = sheet_entry["game_code"]
