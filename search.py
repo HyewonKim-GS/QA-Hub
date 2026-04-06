@@ -535,7 +535,7 @@ def search_slack_channels(query: str) -> List[Dict]:
 
 # ── Google Drive search via MCP ──────────────────────────────────────────────
 
-MCP_BASE = "http://172.16.50.144:3100"
+MCP_BASE = os.environ.get("MCP_SSE_URL", "http://172.16.50.144:3100")
 
 
 class _MCPSession:
