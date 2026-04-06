@@ -2200,7 +2200,7 @@ async function saveSchedule(){
     const url=_smEditId?'/api/schedule/'+_smEditId:'/api/schedule';
     const method=_smEditId?'PUT':'POST';
     const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok)throw new Error('저장 실패');
+    if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||'저장 실패');}
     closeSchedModal();
     _schedLoaded=false;_giLoaded=false;
     await _loadSchedule();

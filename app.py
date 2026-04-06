@@ -278,8 +278,9 @@ async def presentation():
 @app.get("/api/me")
 async def api_me():
     from search import ATLASSIAN_EMAIL
-    name = ATLASSIAN_EMAIL.split("@")[0] if ATLASSIAN_EMAIL else "unknown"
-    parts = name.replace(".", " ").split()
+    raw = ATLASSIAN_EMAIL.split("@")[0] if ATLASSIAN_EMAIL else "unknown"
+    parts = raw.replace(".", " ").split()
+    name = " ".join(p.capitalize() for p in parts)
     initials = (parts[0][0] + (parts[1][0] if len(parts) > 1 else parts[0][1] if len(parts[0]) > 1 else "")).upper()
     return JSONResponse({"name": name, "initials": initials})
 
@@ -1225,6 +1226,8 @@ class ScheduleEntry(BaseModel):
 async def api_schedule_post(body: ScheduleEntry):
     """QA 일정 신규 등록."""
     entries = _read_schedule()
+    if any(e.get("game_name", "").strip().lower() == body.game_name.strip().lower() for e in entries):
+        return JSONResponse({"error": f"'{body.game_name}' 은(는) 이미 등록된 게임입니다."}, status_code=409)
     new_entry = {
         "id": str(uuid.uuid4()),
         "game_name": body.game_name,
