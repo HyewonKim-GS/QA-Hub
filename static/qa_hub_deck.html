@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>QA Hub — 팀 소개 발표</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo',sans-serif;background:#0a0f1e;overflow:hidden;height:100vh;width:100vw}
+
+  .slide{position:absolute;inset:0;display:flex;opacity:0;pointer-events:none;transition:opacity .4s ease,transform .4s ease;transform:translateY(14px)}
+  .slide.active{opacity:1;pointer-events:all;transform:translateY(0)}
+  .full-center{flex-direction:column;align-items:center;justify-content:center;padding:60px 80px}
+
+  .bg-dark{background:linear-gradient(145deg,#0a0f1e 0%,#111827 100%)}
+  .bg-accent{background:linear-gradient(145deg,#0d1b3e 0%,#1a1040 100%)}
+
+  /* 커버 */
+  .logo-wrap{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#4f8ef7,#6366f1);display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 12px 32px rgba(79,142,247,.35)}
+  .kicker{font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:12px;text-align:center}
+  .h1{font-size:64px;font-weight:900;letter-spacing:-1.5px;line-height:1.05;color:#fff;text-align:center}
+  .h1 em{font-style:normal;background:linear-gradient(90deg,#4f8ef7,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .h2{font-size:42px;font-weight:900;letter-spacing:-1px;line-height:1.1;color:#fff;text-align:center;margin-bottom:10px}
+  .sub{font-size:18px;color:rgba(255,255,255,.55);line-height:1.7;text-align:center;margin-top:12px}
+  .pill-row{display:flex;gap:8px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+  .pill{font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5)}
+
+  /* 공통 카드 */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:100%;max-width:960px}
+  .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:30px 26px}
+  .card-center{text-align:center}
+  .ci{margin-bottom:14px;display:flex;justify-content:center}
+  .ct{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+  .cd{font-size:13.5px;color:rgba(255,255,255,.6);line-height:1.75;word-break:keep-all}
+  .cd strong{color:rgba(255,255,255,.9)}
+
+  /* 솔루션 바 */
+  .bar{background:linear-gradient(90deg,rgba(79,142,247,.14),rgba(99,102,241,.14));border:1px solid rgba(79,142,247,.3);border-radius:14px;padding:18px 32px;text-align:center;width:100%;max-width:960px;margin-top:22px}
+  .bar-main{font-size:16px;font-weight:700;color:#fff}
+  .bar-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:5px}
+
+  /* 빌드 슬라이드 */
+  .build-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .bicon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+
+  /* gs-os 상세 슬라이드 */
+  .flow{display:flex;flex-direction:column;gap:12px;width:100%;max-width:860px;margin-top:4px}
+  .flow-row{display:flex;align-items:flex-start;gap:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px 24px}
+  .flow-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;margin-top:2px}
+  .flow-body{font-size:13.5px;color:rgba(255,255,255,.65);line-height:1.7;word-break:keep-all}
+  .flow-body strong{color:#fff;font-size:14px;display:block;margin-bottom:4px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px;background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25);margin-right:4px;font-family:monospace}
+
+  /* 기대 결과 */
+  .result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:100%;max-width:960px}
+  .result-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:30px 24px;text-align:center}
+  .result-num{font-size:38px;font-weight:900;margin-bottom:8px}
+  .result-label{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+  .result-desc{font-size:13.5px;color:rgba(255,255,255,.55);line-height:1.75;word-break:keep-all}
+
+  /* 한계점 */
+  .limit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:100%;max-width:960px}
+  .limit-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px 22px;text-align:center}
+  .limit-icon{margin-bottom:12px;display:flex;justify-content:center}
+  .limit-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px}
+  .limit-desc{font-size:13px;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:14px;word-break:keep-all}
+  .limit-fix{font-size:12px;color:#60a5fa;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.2);border-radius:8px;padding:8px 12px;line-height:1.6;word-break:keep-all}
+
+  /* 데모 */
+  .demo-btn{background:linear-gradient(135deg,#4f8ef7,#6366f1);border:none;color:#fff;font-size:16px;font-weight:700;padding:16px 44px;border-radius:14px;cursor:pointer;box-shadow:0 8px 24px rgba(79,142,247,.4);transition:transform .15s,box-shadow .15s}
+  .demo-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(79,142,247,.5)}
+
+  /* 마무리 */
+  .end-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:680px;margin-top:24px}
+  .end-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:18px 20px}
+  .end-card h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.4);margin-bottom:8px}
+  .end-card p{font-size:13px;color:#fff;line-height:1.6}
+  .url-pill{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.35);border-radius:12px;padding:13px 24px;font-size:15px;font-weight:700;color:#93c5fd;margin-top:18px;display:inline-block}
+
+  /* 네비게이션 */
+  .nav-bar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(10,15,30,.9);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:32px;padding:8px 16px;z-index:1000}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .2s}
+  .dot.on{background:#4f8ef7;width:22px;border-radius:4px}
+  .nbtn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;padding:0 4px;transition:color .15s}
+  .nbtn:hover{color:#fff}
+  .nnum{font-size:11px;font-weight:600;color:rgba(255,255,255,.28);min-width:40px;text-align:center}
+  .keyhint{position:fixed;bottom:22px;right:24px;font-size:10px;color:rgba(255,255,255,.18)}
+  .sc{position:fixed;top:18px;right:22px;font-size:10px;font-weight:700;color:rgba(255,255,255,.2);z-index:1000;pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- ①커버 -->
+<div class="slide bg-dark full-center active">
+  <div class="logo-wrap">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+  </div>
+  <div class="kicker">QA Engineering · Bagelcode</div>
+  <div class="h1">QA <em>Hub</em></div>
+  <div class="sub">QA 업무를 한 곳에서 — 검색, 이슈, 일정, AI까지</div>
+  <div class="pill-row">
+    <span class="pill">Jira 연동</span>
+    <span class="pill">Confluence</span>
+    <span class="pill">Google Drive</span>
+    <span class="pill">Hub AI</span>
+    <span class="pill">일정 관리</span>
+    <span class="pill">통합 검색</span>
+  </div>
+</div>
+
+<!-- ②배경 / 문제 -->
+<div class="slide bg-dark full-center">
+  <div style="margin-bottom:30px">
+    <div class="kicker">Why we built this</div>
+    <div class="h2">QA 업무, 지금까지는 이랬어요</div>
+  </div>
+  <div class="grid3">
+    <div class="card card-center">
+      <div class="ci"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></div>
+      <div class="ct">툴 분산</div>
+      <div class="cd">Jira·Confluence·Drive·Slack을 탭마다 열어두고 오가며 정보를 찾아야 했어요</div>
+    </div>
+    <div class="card card-center">
+      <div class="ci"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+      <div class="ct">일정 파악 어려움</div>
+      <div class="cd">스프레드시트·구두 공유가 섞여 팀 전체 QA 일정을 한눈에 보기 어려웠어요</div>
+    </div>
+    <div class="card card-center">
+      <div class="ci"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+      <div class="ct">문서 접근 비효율</div>
+      <div class="cd">TC 시트·GDD·Math Doc 링크를 매번 Confluence나 Drive에서 직접 찾아야 했어요</div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="bar-main">→ QA Hub 하나로 모두 연결</div>
+    <div class="bar-sub">Jira · Confluence · Google Drive · Slack · Calendar — 단일 창구에서 끝</div>
+  </div>
+</div>
+
+<!-- ③어떻게 만들었나 -->
+<div class="slide bg-dark full-center">
+  <div style="margin-bottom:28px">
+    <div class="kicker">How we built it</div>
+    <div class="h2" style="font-size:36px">AI 툴과 함께한 제작 노하우</div>
+  </div>
+  <div class="grid3" style="max-width:900px">
+    <div class="card">
+      <div class="build-head">
+        <div class="bicon" style="background:linear-gradient(135deg,#4f8ef7,#6366f1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></div>
+        <div class="ct" style="margin:0">Figma MCP</div>
+      </div>
+      <div class="cd">
+        레이아웃 설계 시 <strong>Figma MCP</strong>로 디자인 컨텍스트를 직접 참조하며 개발<br><br>
+        컴포넌트 구조·색상·간격을 코드에 즉시 반영해 디자인-개발 간 오차를 최소화했어요
+      </div>
+    </div>
+    <div class="card">
+      <div class="build-head">
+        <div class="bicon" style="background:linear-gradient(135deg,#f59e0b,#ef4444)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="9" height="18" rx="1"/><rect x="13" y="3" width="9" height="18" rx="1"/></svg></div>
+        <div class="ct" style="margin:0">시안 비교 워크플로우</div>
+      </div>
+      <div class="cd">
+        UI 요소마다 <strong>A안 / B안 시안</strong>을 나란히 생성 후 비교<br><br>
+        담당자 컬럼·상태 뱃지·테이블 정렬 등 세부 UX를 반복 검토하며 최적안을 선택했어요
+      </div>
+    </div>
+    <div class="card">
+      <div class="build-head">
+        <div class="bicon" style="background:linear-gradient(135deg,#22c55e,#0ea5e9)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="3" cy="6" r="2"/><circle cx="21" cy="6" r="2"/><circle cx="3" cy="18" r="2"/><circle cx="21" cy="18" r="2"/><path d="M5 6h5m4 0h5M5 18h5m4 0h5M9 7l3 5m3-5-3 5"/></svg></div>
+        <div class="ct" style="margin:0">gs-os-ontology MCP</div>
+      </div>
+      <div class="cd">
+        게임 목록 · 문서 링크를 <strong>온톨로지 MCP</strong>로 실시간 연동<br><br>
+        GDD·Math Doc·Sound·연출 문서를 게임명 하나로 자동 매핑 — 수동 관리 불필요
+      </div>
+    </div>
+  </div>
+  <div class="bar" style="max-width:900px">
+    <div class="bar-main">Claude AI (Cowork) 와 페어 프로그래밍으로 전체 개발</div>
+    <div class="bar-sub">기획 → 시안 → 코드 → 검증까지 AI와 협업 — 혼자서도 풀스택 QA 툴 완성</div>
+  </div>
+</div>
+
+<!-- ④gs-os MCP 활용 상세 -->
+<div class="slide bg-dark full-center">
+  <div style="margin-bottom:24px">
+    <div class="kicker">gs-os-ontology MCP 활용</div>
+    <div class="h2" style="font-size:36px">게임 메타데이터를 코드 없이 연결하다</div>
+  </div>
+  <div class="flow">
+    <div class="flow-row">
+      <div class="flow-num">1</div>
+      <div class="flow-body">
+        <strong>서버 시작 시 전체 게임 목록 자동 캐싱</strong>
+        <span class="tag">search_games</span> 툴로 스타트업 시 모든 게임 데이터를 메모리에 올려요 — 검색·드롭다운이 즉각 응답
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num">2</div>
+      <div class="flow-body">
+        <strong>게임명 → 문서 링크 원클릭 조회</strong>
+        <span class="tag">get_game</span> 툴로 GDD·Math Doc·Sound Sheet·연출 링크를 게임명 하나로 자동 반환 — TC 현황 카드 클릭 한 번으로 문서 패널 오픈
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num">3</div>
+      <div class="flow-body">
+        <strong>Drive 검색과 온톨로지 결과를 병합 · 우선순위 부여</strong>
+        온톨로지 결과(from_ontology: true)를 Drive 검색 결과보다 상위에 노출 — 정확도 높은 공식 링크가 항상 먼저 표시
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num">4</div>
+      <div class="flow-body">
+        <strong>통합 검색 키워드 확장에도 활용</strong>
+        게임 이름·코드·별칭을 온톨로지 기반으로 확장해 오탈자·약어 검색도 정확히 매칭
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤기대 결과 -->
+<div class="slide bg-dark full-center">
+  <div style="margin-bottom:28px">
+    <div class="kicker">Expected Impact</div>
+    <div class="h2" style="font-size:36px">실무에서 기대하는 효과</div>
+  </div>
+  <div class="result-grid">
+    <div class="result-card">
+      <div class="result-num" style="display:flex;justify-content:center"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+      <div class="result-label">컨텍스트 스위칭 감소</div>
+      <div class="result-desc">Jira·Confluence·Drive·Slack을 오가는 시간을 줄이고 QA Hub 한 곳에서 업무 마무리</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num" style="display:flex;justify-content:center"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <div class="result-label">문서 접근 자동화</div>
+      <div class="result-desc">게임별 GDD·Math·Sound·TC 링크를 클릭 한 번으로 — 매번 찾아 헤매는 일 없음</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num" style="display:flex;justify-content:center"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></div>
+      <div class="result-label">자연어 이슈 분석</div>
+      <div class="result-desc">Hub AI로 "이번 달 Critical 이슈 요약해줘" 같은 질의를 자연어로 즉시 처리</div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="bar-main">QA 업무의 단순 반복을 줄이고, 본질적인 테스트에 더 집중</div>
+    <div class="bar-sub">검색 · 문서 · 일정 · 이슈 트래킹을 하나의 창구로 통합</div>
+  </div>
+</div>
+
+<!-- ⑥목표 -->
+<div class="slide bg-dark full-center">
+  <div style="margin-bottom:28px">
+    <div class="kicker">Goal</div>
+    <div class="h2" style="font-size:36px">QA 팀 내부 공용 도구로 자리잡기</div>
+    <div class="sub" style="margin-top:10px">1차 목표 — QA 팀원 전체가 동일한 허브에서 업무</div>
+  </div>
+  <div class="flow" style="max-width:820px">
+    <div class="flow-row">
+      <div class="flow-num" style="background:linear-gradient(135deg,#6366f1,#4f8ef7)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 0 0-8-8z"/></svg></div>
+      <div class="flow-body">
+        <strong>현재 — 개인 로컬 환경</strong>
+        localhost:8000 에서 운영 중 · QA 담당자 개인이 사용 · 팀 공유 불가
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num" style="background:linear-gradient(135deg,#f59e0b,#22c55e)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+      <div class="flow-body">
+        <strong>1차 목표 — QA 팀 내부 배포</strong>
+        사내 서버에 올려 <strong>QA 팀원 전체가 같은 URL로 접속</strong> — 이슈·일정·문서를 하나의 창구에서 함께 관리
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num" style="background:linear-gradient(135deg,#22c55e,#0ea5e9)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="flow-body">
+        <strong>배포 시 기대 효과</strong>
+        팀원 모두가 동일한 Jira·Confluence 데이터 실시간 공유 · 버전 차이 없이 일관된 정보로 소통
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num" style="background:linear-gradient(135deg,#a78bfa,#ec4899)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg></div>
+      <div class="flow-body">
+        <strong>배포 전 준비 사항</strong>
+        서버 안정화 · 팀원 온보딩 가이드 · 피드백 수렴 후 지속 개선
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑦한계점 & 개선사항 -->
+<div class="slide bg-dark full-center">
+  <div style="margin-bottom:28px">
+    <div class="kicker">한계점 & 개선 방향</div>
+    <div class="h2" style="font-size:36px">더 잘할 수 있는 것들</div>
+  </div>
+  <div class="limit-grid">
+    <div class="limit-card">
+      <div class="limit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div class="limit-title">외부 서비스 의존</div>
+      <div class="limit-desc">Drive MCP · Jira API 장애 시 일부 기능 중단 가능</div>
+      <div class="limit-fix">→ 오프라인 캐시 강화 & fallback UI 추가</div>
+    </div>
+    <div class="limit-card">
+      <div class="limit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg></div>
+      <div class="limit-title">초기 캐시 로딩</div>
+      <div class="limit-desc">서버 시작 시 Jira·Confluence 전체 캐싱에 수십 초 소요</div>
+      <div class="limit-fix">→ 로딩 상태 UI 개선 & 백그라운드 점진적 로딩</div>
+    </div>
+    <div class="limit-card">
+      <div class="limit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6m-6 0v6l-4 10a1 1 0 0 0 .9 1.4h12.2a1 1 0 0 0 .9-1.4L15 9V3"/><path d="M7.3 15h9.4"/></svg></div>
+      <div class="limit-title">QA 전문용어 한계</div>
+      <div class="limit-desc">GPT 번역·동의어 확장이 게임 도메인 특수 용어를 놓치는 경우 있음</div>
+      <div class="limit-fix">→ 동의어 사전(RELATED) 지속 확장 & 사용자 피드백 루프</div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="bar-main">팀 피드백 기반으로 지속 개선 중</div>
+    <div class="bar-sub">실제 사용하면서 발견되는 엣지케이스를 빠르게 반영할 예정</div>
+  </div>
+</div>
+
+<!-- ⑦라이브 데모 -->
+<div class="slide bg-dark full-center" data-demo="true">
+  <div style="text-align:center;max-width:560px">
+    <div style="margin-bottom:20px;display:flex;justify-content:center"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+    <div class="kicker">Live Demo</div>
+    <div class="h2" style="font-size:42px;margin-bottom:14px">지금 바로 열어볼게요</div>
+    <div class="sub" style="margin-bottom:30px">새 탭에서 QA Hub가 열리고<br>인터랙티브 투어가 자동으로 시작돼요</div>
+    <button class="demo-btn" onclick="openHub()">QA Hub 열기 →</button>
+    <div id="demo-opened" style="display:none;margin-top:18px;font-size:13px;color:rgba(255,255,255,.4)">
+      ✓ 새 탭에서 열렸어요 — 시연 후 이 탭으로 돌아오세요
+    </div>
+  </div>
+</div>
+
+<!-- ⑧마무리 -->
+<div class="slide bg-accent full-center">
+  <div class="kicker">Next Step</div>
+  <div class="h1" style="font-size:46px">QA 팀과 함께 쓰는<br><em>QA Hub</em></div>
+  <div class="sub" style="margin-bottom:0">로컬에서 검증 완료 — 다음 단계는 팀 내부 배포<br>피드백 주시면 바로 반영할게요 🙏</div>
+  <div class="end-grid">
+    <div class="end-card">
+      <h4>현재 상태</h4>
+      <p>로컬 서버 운영 중<br>기능 검증 완료</p>
+    </div>
+    <div class="end-card">
+      <h4>다음 목표</h4>
+      <p>QA 팀 내부 서버 배포<br>팀원 전체 공동 사용</p>
+    </div>
+    <div class="end-card">
+      <h4>연동 소스</h4>
+      <p>Jira · Confluence<br>Google Drive · Slack</p>
+    </div>
+    <div class="end-card">
+      <h4>문의 / 피드백</h4>
+      <p style="color:#93c5fd">hyewon.kim@bagelcode.com</p>
+    </div>
+  </div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-bar">
+  <button class="nbtn" onclick="go(-1)">‹</button>
+  <div id="dots-wrap"></div>
+  <span class="nnum" id="nnum">1 / 9</span>
+  <button class="nbtn" onclick="go(1)">›</button>
+</div>
+<div class="keyhint">← → 방향키 이동</div>
+<div class="sc" id="sc">1 / 9</div>
+
+<script>
+  const HUB = 'http://localhost:8000/hub';
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total  = slides.length;
+  let cur = 0, demoLoaded = false;
+
+  const dotsWrap = document.getElementById('dots-wrap');
+  slides.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot'+(i===0?' on':'');
+    d.onclick = ()=>goTo(i);
+    dotsWrap.appendChild(d);
+  });
+
+  function openHub(){
+    window.open(HUB, 'qa-hub-demo');
+    const msg = document.getElementById('demo-opened');
+    if(msg) msg.style.display = 'block';
+  }
+
+  function goTo(n){
+    if(n<0||n>=total) return;
+    slides[cur].classList.remove('active');
+    cur = n;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===cur));
+    const txt = (cur+1)+' / '+total;
+    document.getElementById('nnum').textContent = txt;
+    document.getElementById('sc').textContent = txt;
+    if(slides[cur].dataset.demo && !demoLoaded){
+      demoLoaded = true;
+      openHub();
+    }
+  }
+  function go(d){ goTo(cur+d); }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') go(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+  });
+</script>
+</body>
+</html>
