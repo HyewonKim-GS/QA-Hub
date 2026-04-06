@@ -58,7 +58,7 @@ def fetch_all_jira() -> List[Dict]:
             params: Dict = {
                 "jql": jql,
                 "maxResults": PAGE_SIZE,
-                "fields": "summary,status,assignee,priority,issuetype,updated,created,description,labels,parent",
+                "fields": "summary,status,assignee,priority,issuetype,updated,created,description,labels,parent,resolutiondate",
             }
             if next_page_token:
                 params["nextPageToken"] = next_page_token
@@ -78,6 +78,8 @@ def fetch_all_jira() -> List[Dict]:
                 updated = updated_raw[:10] if updated_raw else "-"
                 created_raw = f.get("created", "")
                 created = created_raw[:10] if created_raw else "-"
+                resolved_raw = f.get("resolutiondate", "")
+                resolved = resolved_raw[:10] if resolved_raw else None
                 desc_obj = f.get("description")
                 desc_full = _extract_adf_text(desc_obj) if desc_obj else ""
                 parent_summary = ((f.get("parent") or {}).get("fields") or {}).get("summary", "")
@@ -92,6 +94,7 @@ def fetch_all_jira() -> List[Dict]:
                     "assignee": assignee,
                     "updated": updated,
                     "created": created,
+                    "resolved": resolved,
                     "game": game,
                     "is_sb": is_sb,
                     "description": desc_full[:120] + "..." if len(desc_full) > 120 else desc_full,

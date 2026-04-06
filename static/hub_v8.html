@@ -2860,6 +2860,21 @@ function _sevInfo(p){
   const m={'주요':{label:'Critical',col:'#ef4444',bg:'#fef2f2',bd:'#fecaca'},'highest':{label:'Critical',col:'#ef4444',bg:'#fef2f2',bd:'#fecaca'},'high':{label:'Major',col:'#f59e0b',bg:'#fffbeb',bd:'#fde68a'},'medium':{label:'Major',col:'#f59e0b',bg:'#fffbeb',bd:'#fde68a'},'사소':{label:'Minor',col:'#94a3b8',bg:'#f8fafc',bd:'#e2e8f0'},'low':{label:'Minor',col:'#94a3b8',bg:'#f8fafc',bd:'#e2e8f0'},'lowest':{label:'Minor',col:'#94a3b8',bg:'#f8fafc',bd:'#e2e8f0'}};
   return m[(p||'').toLowerCase()]||{label:'Minor',col:'#94a3b8',bg:'#f8fafc',bd:'#e2e8f0'};
 }
+function _giStCat(st){
+  const s=(st||'').toLowerCase();
+  if(s.includes('done')||s.includes('완료')||s.includes('closed'))return'완료';
+  if(s.includes('review'))return'검토중';
+  if(s.includes('progress')||s==='진행 중'||s==='진행중')return'진행중';
+  if(s.includes('reopen')||s.includes('리오픈'))return'리오픈';
+  return'미해결';
+}
+
+// 상단 모서리만 둥근 SVG path 생성
+function _svgRoundTop(x,y,w,h,r){
+  if(h<=0) return '';
+  const rr=Math.min(r,w/2,h/2);
+  return `<path d="M ${x},${y+h} L ${x},${y+rr} Q ${x},${y} ${x+rr},${y} L ${x+w-rr},${y} Q ${x+w},${y} ${x+w},${y+rr} L ${x+w},${y+h} Z"`;
+}
 
 function _renderBugChartFor(safeKey){
   const st=_giCardState[safeKey];
@@ -2895,12 +2910,16 @@ function _renderBugChartFor(safeKey){
     svgInner+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#eef1f7" stroke-width="1"/>`;
     svgInner+=`<text x="${padL-5}" y="${y+3}" text-anchor="end" font-size="9" fill="#b0bac9">${v}</text>`;
   });
+  const toDateStr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   counts.forEach((c,i)=>{
     const slotCx=padL+i*slotW+slotW/2;
     const bx=Math.round(slotCx-barW/2);
     const isToday=c.date.getTime()===today.getTime();
     const isFuture=c.date>today;
-    if(isToday) svgInner+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH}" rx="5" fill="rgba(59,126,232,.05)"/>`;
+    const dStr=toDateStr(c.date);
+    const isFiltered=st.dayFilter===dStr;
+    if(isFiltered) svgInner+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH}" rx="5" fill="rgba(59,126,232,.12)"/>`;
+    else if(isToday) svgInner+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH}" rx="5" fill="rgba(59,126,232,.05)"/>`;
     if(isFuture){
       svgInner+=`<rect x="${bx}" y="${padT+chartH-3}" width="${barW}" height="3" rx="1.5" fill="#eef1f7"/>`;
     }else{
@@ -2908,35 +2927,145 @@ function _renderBugChartFor(safeKey){
       const mnH=c.mn>0?Math.max(3,Math.round((c.mn/yMax)*chartH)):0;
       const mjH=c.mj>0?Math.max(3,Math.round((c.mj/yMax)*chartH)):0;
       const cH=c.c>0?Math.max(3,Math.round((c.c/yMax)*chartH)):0;
-      if(mnH){svgInner+=`<rect x="${bx}" y="${y-mnH}" width="${barW}" height="${mnH}" rx="${(!mjH&&!cH)?'3':'0 0 3 3'}" fill="#dde3ef"/>`;y-=mnH;}
-      if(mjH){svgInner+=`<rect x="${bx}" y="${y-mjH}" width="${barW}" height="${mjH}" rx="${!cH?'3 3 0 0':'0'}" fill="#f6a623"/>`;y-=mjH;}
-      if(cH){svgInner+=`<rect x="${bx}" y="${y-cH}" width="${barW}" height="${cH}" rx="3 3 0 0" fill="#ef4444"/>`;}
+      const _r=6;
+      // 중간/하단 세그먼트: flat rect (+1px 연장으로 이음새 제거)
+      // 최상단 세그먼트만: rounded top path
+      if(mnH){ if(mjH||cH){svgInner+=`<rect x="${bx}" y="${y-mnH}" width="${barW}" height="${mnH+1}" fill="#dde3ef"/>`;}else{svgInner+=_svgRoundTop(bx,y-mnH,barW,mnH,_r)+` fill="#dde3ef"/>`;}y-=mnH;}
+      if(mjH){ if(cH)      {svgInner+=`<rect x="${bx}" y="${y-mjH}" width="${barW}" height="${mjH+1}" fill="#f6a623"/>`;} else{svgInner+=_svgRoundTop(bx,y-mjH,barW,mjH,_r)+` fill="#f6a623"/>`;}y-=mjH;}
+      if(cH) {svgInner+=_svgRoundTop(bx,y-cH,barW,cH,_r)+` fill="#ef4444"/>`;}
     }
-    svgInner+=`<text x="${slotCx}" y="${H-4}" text-anchor="middle" font-size="9.5" font-weight="${isToday?'700':'400'}" fill="${isToday?'#3b7ee8':'#a0aec0'}">${fmt(c.date)}</text>`;
+    svgInner+=`<text x="${slotCx}" y="${H-4}" text-anchor="middle" font-size="9.5" font-weight="${(isToday||isFiltered)?'700':'400'}" fill="${isFiltered?'#3b7ee8':isToday?'#3b7ee8':'#a0aec0'}">${fmt(c.date)}</text>`;
+    // 클릭 오버레이 (투명 rect — 항상 최상위)
+    if(!isFuture) svgInner+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH+padB-4}" rx="5" fill="transparent" style="cursor:pointer" onclick="_filterGiDay('${safeKey}','${dStr}')"/>`;
   });
-  const sbTag=st.isSB?'<span style="font-size:12px;font-weight:400;color:var(--t3)"> (SB)</span>':'';
+  // ── 탭별 범례 ──
+  const tab=st.chartTab||'sev';
+  const tabBtnBase='font-size:10px;font-weight:600;padding:3px 11px;border-radius:5px;cursor:pointer;border:none;transition:all .12s;white-space:nowrap;';
+  const tabOn =tabBtnBase+'background:#fff;color:#334155;box-shadow:0 1px 3px rgba(0,0,0,.1);';
+  const tabOff=tabBtnBase+'background:transparent;color:#94a3b8;';
+  const legendSev=`
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0"></span>Critical</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#f6a623;display:inline-block;flex-shrink:0"></span>Major</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#dde3ef;border:1px solid #c5cedd;display:inline-block;flex-shrink:0"></span>Minor</span>`;
+  const legendSta=`
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#3b7ee8;display:inline-block;flex-shrink:0"></span>등록</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#10b981;display:inline-block;flex-shrink:0"></span>완료</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#f87171;display:inline-block;flex-shrink:0"></span>잔여</span>`;
+
+  // ── 등록/완료/잔여 SVG 계산 ──
+  let svgSta='';
+  if(tab==='sta'){
+    const staCounts=days.map(d=>{
+      const dStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      // 등록: 당일 신규 등록
+      const reg=bugs.filter(b=>(b.created||'').slice(0,10)===dStr).length;
+      // 완료: 당일 완료 처리된 이슈 (resolved 날짜 기준, 없으면 updated 기준)
+      const done=bugs.filter(b=>{
+        const resolvedDay=(b.resolved||((_giStCat(b.status)==='완료')?b.updated:null)||'').slice(0,10);
+        return resolvedDay===dStr;
+      }).length;
+      // 잔여: 그날까지 등록된 이슈 중 아직 미완료이거나, 완료됐더라도 그날 이후에 완료된 것
+      const remain=bugs.filter(b=>{
+        const createdDay=(b.created||'').slice(0,10);
+        if(!createdDay||createdDay>dStr) return false; // 아직 등록 안됨
+        const resolvedDay=(b.resolved||((_giStCat(b.status)==='완료')?b.updated:null)||'').slice(0,10);
+        return !resolvedDay||resolvedDay>dStr; // 미완료이거나 이날 이후에 완료
+      }).length;
+      return{date:d,reg,done,remain};
+    });
+    const staMax=Math.max(...staCounts.map(c=>Math.max(c.reg,c.done,c.remain)),1);
+    const staYMax=Math.ceil(Math.max(staMax,5)/5)*5;
+    const yTicks2=staYMax===5?[1,3,5]:[0,Math.round(staYMax/2/5)*5,staYMax];
+    svgSta+=`<line x1="${padL}" y1="${padT+chartH}" x2="${W-padR}" y2="${padT+chartH}" stroke="#d1d9e8" stroke-width="1.5"/>`;
+    yTicks2.forEach(v=>{
+      const y=padT+chartH-Math.round((v/staYMax)*chartH);
+      svgSta+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#eef1f7" stroke-width="1"/>`;
+      svgSta+=`<text x="${padL-5}" y="${y+3}" text-anchor="end" font-size="9" fill="#b0bac9">${v}</text>`;
+    });
+    const gBarW=barW;
+    const gGap=3;
+    const gTotal=gBarW*3+gGap*2;
+    staCounts.forEach((c,i)=>{
+      const slotCx=padL+i*slotW+slotW/2;
+      const gx=Math.round(slotCx-gTotal/2);
+      const isToday=c.date.getTime()===today.getTime();
+      const isFuture=c.date>today;
+      const dStr=toDateStr(c.date);
+      const isFiltered=st.dayFilter===dStr;
+      if(isFiltered) svgSta+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH}" rx="5" fill="rgba(59,126,232,.12)"/>`;
+      else if(isToday) svgSta+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH}" rx="5" fill="rgba(59,126,232,.05)"/>`;
+      if(!isFuture){
+        [{v:c.reg,col:'#3b7ee8'},{v:c.done,col:'#10b981'},{v:c.remain,col:'#f87171'}].forEach(({v,col},bi)=>{
+          const bh=v>0?Math.max(3,Math.round((v/staYMax)*chartH)):0;
+          if(bh) svgSta+=_svgRoundTop(gx+bi*(gBarW+gGap),padT+chartH-bh,gBarW,bh,6)+` fill="${col}"/>`;
+        });
+      } else {
+        svgSta+=`<rect x="${gx}" y="${padT+chartH-3}" width="${gTotal}" height="3" rx="1.5" fill="#eef1f7"/>`;
+      }
+      svgSta+=`<text x="${slotCx}" y="${H-4}" text-anchor="middle" font-size="9.5" font-weight="${(isToday||isFiltered)?'700':'400'}" fill="${isFiltered?'#3b7ee8':isToday?'#3b7ee8':'#a0aec0'}">${fmt(c.date)}</text>`;
+      if(!isFuture) svgSta+=`<rect x="${padL+i*slotW+2}" y="${padT}" width="${slotW-4}" height="${chartH+padB-4}" rx="5" fill="transparent" style="cursor:pointer" onclick="_filterGiDay('${safeKey}','${dStr}')"/>`;
+    });
+  }
+
   const btnStyle='border:1px solid var(--bd);background:transparent;border-radius:5px;width:24px;height:24px;font-size:12px;cursor:pointer;color:var(--t3);padding:0;display:flex;align-items:center;justify-content:center;transition:all .1s';
   chartEl.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:4px">
-        <button onclick="_giCardState['${safeKey}'].weekOffset--;_renderBugChartFor('${safeKey}')" style="${btnStyle}" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t3)'">‹</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="_giCardState['${safeKey}'].weekOffset--;_giCardState['${safeKey}'].dayFilter=null;_renderBugChartFor('${safeKey}')" style="${btnStyle}" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t3)'">‹</button>
         <div style="display:flex;align-items:center;gap:4px;padding:3px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--sf)">
           <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#94a3b8" stroke-width="1.5" style="flex-shrink:0"><rect x="1.5" y="1.5" width="11" height="11" rx="2"/><line x1="4" y1="7" x2="10" y2="7"/><line x1="7" y1="4" x2="7" y2="10"/></svg>
           <span style="font-size:9px;color:var(--t3)">조회 주차</span>
           <span style="font-size:11px;font-weight:600;color:var(--t2)">${weekLabel}</span>
         </div>
-        <button onclick="_giCardState['${safeKey}'].weekOffset++;_renderBugChartFor('${safeKey}')" style="${btnStyle}" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t3)'">›</button>
+        <button onclick="_giCardState['${safeKey}'].weekOffset++;_giCardState['${safeKey}'].dayFilter=null;_renderBugChartFor('${safeKey}')" style="${btnStyle}" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t3)'">›</button>
+        <div style="display:flex;gap:1px;background:#f1f5f9;border-radius:6px;padding:2px;border:1px solid var(--bd);margin-left:4px">
+          <button onclick="_giCardState['${safeKey}'].chartTab='sev';_renderBugChartFor('${safeKey}')" style="${tab==='sev'?tabOn:tabOff}">심각도별</button>
+          <button onclick="_giCardState['${safeKey}'].chartTab='sta';_renderBugChartFor('${safeKey}')" style="${tab==='sta'?tabOn:tabOff}">등록 / 완료 / 잔여</button>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0"></span>Critical</span>
-        <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#f6a623;display:inline-block;flex-shrink:0"></span>Major</span>
-        <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#dde3ef;border:1px solid #c5cedd;display:inline-block;flex-shrink:0"></span>Minor</span>
-      </div>
+      <div style="display:flex;align-items:center;gap:6px">${tab==='sev'?legendSev:legendSta}</div>
     </div>
-    <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:block;width:100%;max-width:${W}px">${svgInner}</svg>`;
+    <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:block;width:100%;max-width:${W}px">${tab==='sev'?svgInner:svgSta}</svg>`;
 
   // 메모 스트립 렌더 (비동기로 붙이기)
   _renderMemoStrip(safeKey, st.displayName, days);
+}
+
+// ── Day Filter ───────────────────────────────────────────────────────────────
+function _filterGiDay(safeKey, dateStr){
+  const st=_giCardState[safeKey]; if(!st) return;
+  // 같은 날 다시 클릭하면 해제
+  const newFilter=st.dayFilter===dateStr?null:dateStr;
+  st.dayFilter=newFilter;
+  // 바 차트 재렌더 (하이라이트 반영)
+  _renderBugChartFor(safeKey);
+  // 이슈 테이블 rows 필터
+  const bodyEl=document.getElementById('gi-body-'+safeKey);
+  if(!bodyEl) return;
+  bodyEl.querySelectorAll('tr.issue-row').forEach(function(tr){
+    tr.style.display=(!newFilter||tr.dataset.date===newFilter)?'':'none';
+  });
+  // 필터 인디케이터 업데이트
+  let ind=bodyEl.querySelector('.gi-day-filter-ind');
+  if(!ind){
+    const tableWrap=bodyEl.querySelector('div[style*="overflow-x"]');
+    if(tableWrap){
+      ind=document.createElement('div');
+      ind.className='gi-day-filter-ind';
+      bodyEl.insertBefore(ind,tableWrap);
+    }
+  }
+  if(ind){
+    if(newFilter){
+      const d=new Date(newFilter+'T00:00:00');
+      const label=(d.getMonth()+1)+'/'+d.getDate();
+      const safeK=safeKey.replace(/'/g,"\\'");
+      const safeD=newFilter.replace(/'/g,"\\'");
+      ind.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:6px 0 6px"><span style="font-size:11px;font-weight:600;color:var(--acc)">${label} 등록 이슈만 표시 중</span><button onclick="_filterGiDay('${safeK}','${safeD}')" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--t3);cursor:pointer">전체 보기</button></div>`;
+    }else{
+      ind.innerHTML='';
+    }
+  }
 }
 
 // ── Chart Memos ──────────────────────────────────────────────────────────────
@@ -3189,7 +3318,7 @@ async function _giRenderCard(entry){
   const displayName=entry.game_name.replace('SB_','');
   const isSB=entry.game_name.startsWith('SB_')||entry.type==='Super Bonus'||entry.type==='SB';
   const safeKey=_giSafeKey(entry.game_name);
-  if(!_giCardState[safeKey]) _giCardState[safeKey]={weekOffset:0,bugs:[],displayName,isSB};
+  if(!_giCardState[safeKey]) _giCardState[safeKey]={weekOffset:0,bugs:[],displayName,isSB,dayFilter:null,chartTab:'sev'};
   if(document.getElementById('gi-card-'+safeKey)) return; // 이미 렌더됨
   const sbTag=isSB?'<span style="font-size:12px;font-weight:400;color:var(--t3)"> (SB)</span>':'';
   const _fmtD=s=>{if(!s)return'';const p=s.split('-');return p[1].replace(/^0/,'')+'.'+p[2].replace(/^0/,'');};
@@ -3236,7 +3365,7 @@ async function _giRenderCard(entry){
         if(s.includes('review'))return'검토중';
         if(s.includes('progress')||s==='진행 중'||s==='진행중')return'진행중';
         if(s.includes('reopen')||s.includes('리오픈'))return'리오픈';
-        return'오픈';
+        return'미해결';
       }
       function stBadge(st){
         const cat=stCategory(st);
@@ -3244,10 +3373,10 @@ async function _giRenderCard(entry){
         if(cat==='검토중')return'<span class="ist ist-rv">검토중</span>';
         if(cat==='진행중')return'<span class="ist ist-ip">진행중</span>';
         if(cat==='리오픈')return`<span class="ist" style="background:var(--redbg);color:var(--red);border:1px solid var(--redbd)">리오픈</span>`;
-        return'<span class="ist ist-td">오픈</span>';
+        return'<span class="ist ist-td">미해결</span>';
       }
       const sevCount={Critical:0,Major:0,Minor:0};
-      const stCount={'오픈':0,'진행중':0,'검토중':0,'리오픈':0,'완료':0};
+      const stCount={'미해결':0,'진행중':0,'검토중':0,'리오픈':0,'완료':0};
       bugs.forEach(i=>{
         const s=sevInfo(i.priority);
         sevCount[s.label]=(sevCount[s.label]||0)+1;
@@ -3258,7 +3387,7 @@ async function _giRenderCard(entry){
         <span style="font-size:11px;font-weight:700;color:var(--amber)">● Major <strong>${sevCount.Major}</strong></span>
         <span style="font-size:11px;font-weight:700;color:var(--t3)">● Minor <strong>${sevCount.Minor}</strong></span>
         <span style="color:var(--bd);font-size:12px;margin:0 1px">|</span>
-        <span style="font-size:11px;color:var(--t2)">오픈 <strong style="color:var(--t1)">${stCount['오픈']}</strong></span>
+        <span style="font-size:11px;color:var(--t2)">미해결 <strong style="color:var(--t1)">${stCount['미해결']}</strong></span>
         <span style="font-size:11px;color:var(--t2)">진행중 <strong style="color:var(--acc)">${stCount['진행중']}</strong></span>
         <span style="font-size:11px;color:var(--t2)">검토중 <strong style="color:var(--amber)">${stCount['검토중']}</strong></span>
         <span style="font-size:11px;color:var(--t2)">리오픈 <strong style="color:var(--red)">${stCount['리오픈']}</strong></span>
@@ -3272,7 +3401,8 @@ async function _giRenderCard(entry){
         const sevBadge=`<span class="sev-pill ${sevCls}">${sev.label}</span>`;
         const dt=i.created?new Date(i.created):(i.updated?new Date(i.updated):'');
         const dateStr=dt?(dt.getMonth()+1)+'/'+dt.getDate():'';
-        rows+=`<tr class="issue-row"><td>${sevBadge}</td><td><a href="${esc(i.url||'#')}" target="_blank" style="text-decoration:none;color:var(--acc);font-size:11px;font-weight:600">${esc(i.key)}</a></td><td style="text-align:left"><a href="${esc(i.url||'#')}" target="_blank" style="text-decoration:none;color:var(--t1);font-size:12px">${esc(i.summary||i.title||'')}</a></td><td>${stBadge(i.status)}</td><td><span style="font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100px">${esc(i.assignee||'—')}</span></td><td><span style="font-size:11px;color:var(--t3);white-space:nowrap">${dateStr}</span></td></tr>`;
+        const rowDateStr=(i.created||i.updated||'').slice(0,10);
+        rows+=`<tr class="issue-row" data-date="${rowDateStr}"><td>${sevBadge}</td><td><a href="${esc(i.url||'#')}" target="_blank" style="text-decoration:none;color:var(--acc);font-size:11px;font-weight:600">${esc(i.key)}</a></td><td style="text-align:left"><a href="${esc(i.url||'#')}" target="_blank" style="text-decoration:none;color:var(--t1);font-size:12px">${esc(i.summary||i.title||'')}</a></td><td>${stBadge(i.status)}</td><td><span style="font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100px">${esc(i.assignee||'—')}</span></td><td><span style="font-size:11px;color:var(--t3);white-space:nowrap">${dateStr}</span></td></tr>`;
       });
       const bodyEl=document.getElementById('gi-body-'+safeKey);
       if(bodyEl){
