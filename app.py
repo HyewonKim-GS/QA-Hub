@@ -19,7 +19,7 @@ from typing import Dict, List, Optional
 
 import holidays as holidays_lib
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -284,7 +284,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return HTMLResponse((STATIC_DIR / "index.html").read_text(encoding="utf-8"))
+    return HTMLResponse((STATIC_DIR / "hub_v8.html").read_text(encoding="utf-8"))
 
 
 @app.get("/hub", response_class=HTMLResponse)
@@ -305,6 +305,32 @@ async def api_me():
     name = " ".join(p.capitalize() for p in parts)
     initials = (parts[0][0] + (parts[1][0] if len(parts) > 1 else parts[0][1] if len(parts[0]) > 1 else "")).upper()
     return JSONResponse({"name": name, "initials": initials})
+
+
+@app.post("/api/login")
+async def api_login(request: Request):
+    import httpx, base64 as _b64
+    body = await request.json()
+    email = (body.get("email") or "").strip()
+    token = (body.get("token") or "").strip()
+    if not email or not token:
+        raise HTTPException(status_code=400, detail="이메일과 API 토큰을 입력해주세요.")
+    domain = os.getenv("ATLASSIAN_DOMAIN", "bagelcode.atlassian.net")
+    cred = _b64.b64encode(f"{email}:{token}".encode()).decode()
+    headers = {"Authorization": f"Basic {cred}", "Accept": "application/json"}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"https://{domain}/rest/api/3/myself", headers=headers)
+    except Exception:
+        raise HTTPException(status_code=502, detail="Atlassian 서버에 연결할 수 없습니다.")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=401, detail="이메일 또는 API 토큰이 올바르지 않습니다.")
+    data = resp.json()
+    name = data.get("displayName") or email.split("@")[0]
+    parts = name.split()
+    initials = (parts[0][0] + (parts[-1][0] if len(parts) > 1 else "")).upper()
+    avatar = data.get("avatarUrls", {}).get("48x48", "")
+    return JSONResponse({"name": name, "initials": initials, "avatar": avatar, "email": email})
 
 
 @app.get("/api/status")
@@ -569,7 +595,7 @@ _TC_CACHE_TTL = 300    # 5분
 _GL_CACHE: dict = {}   # (name, tc_prefix, game_id, is_sb) -> (result, timestamp)
 _GL_CACHE_TTL = 600    # 10분
 
-_REPOB_BIN = "/Users/kimhyewon/.claude/plugins/marketplaces/bagel-marketplace/plugins/repob/skills/repob/bin/repob"
+_REPOB_BIN = os.getenv("REPOB_BIN", "/Users/kimhyewon/.claude/plugins/marketplaces/bagel-marketplace/plugins/repob/skills/repob/bin/repob")
 _GAMES_BRANCHES: dict = {"branches": [], "ts": 0.0}
 
 def _fetch_games_branches() -> List[str]:
@@ -2593,7 +2619,7 @@ def _process_chat(message: str, history: List[dict], _return_prepared: bool = Fa
             slug = gname.replace(" ", "-").lower()  # e.g. "blazing-triplex"
             if not slug:
                 return ""
-            repob_bin = "/Users/kimhyewon/.claude/plugins/marketplaces/bagel-marketplace/plugins/repob/skills/repob/bin/repob"
+            repob_bin = _REPOB_BIN
             if not Path(repob_bin).exists():
                 return ""
             # 1. games 레포에서 게임 브랜치 찾기

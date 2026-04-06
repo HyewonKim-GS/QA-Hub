@@ -17,56 +17,40 @@
     <span class="sb-logo-txt" onclick="showPage('dashboard',null);document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));document.querySelector('.nav[onclick*=dashboard]').classList.add('on')" style="cursor:pointer;user-select:none">QA Hub</span>
   </div>
   <div class="sb-scroll">
-    <div class="sb-sec">메인</div>
+    <div class="sb-sec" data-i18n="nav.main" data-i18n-ko="메인">메인</div>
     <div class="nav on" onclick="showPage('dashboard',this)">
-      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>대시보드
+      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><span data-i18n="nav.dashboard" data-i18n-ko="대시보드">대시보드</span>
     </div>
     <div class="nav" onclick="showPage('game-issues',this)">
-      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>슬롯별 이슈
+      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span data-i18n="nav.slot-issues" data-i18n-ko="슬롯별 이슈">슬롯별 이슈</span>
     </div>
     <div class="nav" onclick="showPage('live-issues',this)">
-      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>라이브 이슈
+      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span data-i18n="nav.live-issues" data-i18n-ko="라이브 이슈">라이브 이슈</span>
     </div>
     <div class="nav" onclick="showPage('schedule',this)">
-      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>스케줄
+      <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span data-i18n="nav.schedule" data-i18n-ko="스케줄">스케줄</span>
     </div>
     <div class="nav" onclick="showPage('hub-ai',this)" style="margin-top:4px">
       <span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>Hub AI
     </div>
     <div class="sb-div"></div>
-    <div class="sb-sec">빠른 링크</div>
+    <div class="sb-sec" data-i18n="nav.quick-links" data-i18n-ko="빠른 링크">빠른 링크</div>
     <a class="nav" href="https://docs.google.com/spreadsheets/d/1ENqN1xSqOvaid38Wpld0Ma91em-L5EgPNZOUQTTWJGQ/edit?gid=1188633554#gid=1188633554" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>GS Timeline</a>
-    <a class="nav" href="https://docs.google.com/spreadsheets/d/1qDCoxHalm1ohVW6FCIqfJ55w29bPnE8_FRZDEdPnpIE/edit?gid=491056088#gid=491056088&range=A1" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></span>CTD 시트</a>
-    <a class="nav" href="https://bagelcode.atlassian.net/jira/software/c/projects/GS/boards/103" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Jira 보드</a>
+    <a class="nav" href="https://docs.google.com/spreadsheets/d/1qDCoxHalm1ohVW6FCIqfJ55w29bPnE8_FRZDEdPnpIE/edit?gid=491056088#gid=491056088&range=A1" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></span><span data-i18n="nav.ctd-sheet" data-i18n-ko="CTD 시트">CTD 시트</span></a>
+    <a class="nav" href="https://bagelcode.atlassian.net/jira/software/c/projects/GS/boards/103" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span data-i18n="nav.jira-board" data-i18n-ko="Jira 보드">Jira 보드</span></a>
     <a class="nav" href="https://bagelcode.atlassian.net/wiki/spaces/GM/overview?homepageId=33122" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Confluence</a>
-    <a class="nav" href="https://auth.bagelcode.com/gamesadmin" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>어드민</a>
+    <a class="nav" href="https://auth.bagelcode.com/gamesadmin" target="_blank" style="text-decoration:none"><span class="nav-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span data-i18n="nav.admin" data-i18n-ko="어드민">어드민</span></a>
   </div>
   <div class="sb-bot">
-    <div class="sb-user" id="sb-user-card" style="cursor:pointer" title="클릭하여 직책 변경">
-      <div class="sb-av" id="sb-av">?</div>
-      <div>
-        <div class="sb-uname" id="sb-uname">...</div>
-        <div class="sb-urole" id="sb-urole">QA Engineer</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px">
+      <span style="font-size:10px;color:var(--t3);font-weight:500">Language</span>
+      <div id="lang-toggle" style="display:flex;align-items:center;background:var(--bg);border-radius:6px;border:1.5px solid var(--bd);padding:2px;gap:1px">
+        <div id="lang-ko" onclick="setLang('ko')" style="padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;background:#fff;color:var(--acc);box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:all .12s">KO</div>
+        <div id="lang-en" onclick="setLang('en')" style="padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;color:var(--t3);cursor:pointer;transition:all .12s">EN</div>
       </div>
     </div>
   </div>
 </aside>
-
-<!-- 직책 변경 모달 -->
-<div id="profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:#1e1e2e;border:1px solid #444;border-radius:12px;padding:28px 24px;width:300px;display:flex;flex-direction:column;gap:14px;">
-    <div style="font-size:15px;font-weight:600;color:#fff">직책 설정</div>
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <label style="font-size:12px;color:#bbb">직책</label>
-      <input id="profile-role-inp" placeholder="QA Engineer" style="background:#2a2a3a;border:1px solid #555;border-radius:7px;padding:8px 12px;color:#fff;font-size:13px;outline:none;"/>
-      <style>#profile-role-inp::placeholder{color:#888;}</style>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button onclick="document.getElementById('profile-modal').style.display='none'" style="background:transparent;border:1px solid #555;color:#aaa;border-radius:7px;padding:7px 16px;font-size:13px;cursor:pointer;">취소</button>
-      <button onclick="saveRole()" style="background:#7c6af7;border:none;color:#fff;border-radius:7px;padding:7px 16px;font-size:13px;cursor:pointer;">저장</button>
-    </div>
-  </div>
-</div>
 
 <!-- MAIN -->
 <div class="main-wrap">
@@ -80,7 +64,7 @@
       <div class="search-box" id="hub-search-box">
         <div class="search-row">
           <span class="search-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
-          <input class="search-inp" id="hub-search-inp" placeholder="키워드 검색 — 게임명, 이슈 번호, 기능명…" autocomplete="off"/>
+          <input class="search-inp" id="hub-search-inp" placeholder="키워드 검색 — 게임명, 이슈 번호, 기능명…" autocomplete="off" data-i18n-placeholder="ph.search" data-i18n-placeholder-ko="키워드 검색 — 게임명, 이슈 번호, 기능명…"/>
         </div>
         <div class="src-chips" id="hub-src-chips">
           <span class="src-chip on" data-src="jira">Jira</span>
@@ -98,17 +82,17 @@
         <div class="bell-badge" id="notif-badge" style="display:none">0</div>
         <div class="notif-drop" id="notif-drop" style="display:none">
           <div class="notif-drop-hd">
-            <span class="notif-drop-title">알림 <span id="notif-drop-cnt" style="font-size:11px;font-weight:600;color:#ef4444;margin-left:2px"></span></span>
-            <span class="notif-drop-action" onclick="notifReadAll(event)">모두 읽음</span>
+            <span class="notif-drop-title"><span data-i18n="notif.title" data-i18n-ko="알림">알림</span> <span id="notif-drop-cnt" style="font-size:11px;font-weight:600;color:#ef4444;margin-left:2px"></span></span>
+            <span class="notif-drop-action" onclick="notifReadAll(event)" data-i18n="notif.readAll" data-i18n-ko="모두 읽음">모두 읽음</span>
           </div>
           <div class="notif-tabs">
-            <div class="notif-tab" data-tab="all" onclick="notifSetTab('all',this)">전체</div>
-            <div class="notif-tab off" data-tab="bug" onclick="notifSetTab('bug',this)">버그</div>
-            <div class="notif-tab off" data-tab="schedule" onclick="notifSetTab('schedule',this)">일정</div>
-            <div class="notif-tab off" data-tab="status" onclick="notifSetTab('status',this)">상태</div>
+            <div class="notif-tab" data-tab="all" onclick="notifSetTab('all',this)" data-i18n="notif.all" data-i18n-ko="전체">전체</div>
+            <div class="notif-tab off" data-tab="bug" onclick="notifSetTab('bug',this)" data-i18n="notif.bug" data-i18n-ko="버그">버그</div>
+            <div class="notif-tab off" data-tab="schedule" onclick="notifSetTab('schedule',this)" data-i18n="notif.schedule" data-i18n-ko="일정">일정</div>
+            <div class="notif-tab off" data-tab="status" onclick="notifSetTab('status',this)" data-i18n="notif.status" data-i18n-ko="상태">상태</div>
           </div>
           <div id="notif-drop-list"></div>
-          <div class="notif-drop-footer"><span onclick="notifOpenSidebar()">전체 알림 보기 →</span></div>
+          <div class="notif-drop-footer"><span onclick="notifOpenSidebar()" data-i18n="notif.viewAll" data-i18n-ko="전체 알림 보기 →">전체 알림 보기 →</span></div>
         </div>
       </div>
     </div>
@@ -124,14 +108,14 @@
       <div class="card" style="overflow:hidden" id="dash-tc-card">
         <!-- 카드 헤더 -->
         <div class="card-hd" style="justify-content:space-between">
-          <span class="sec-t">테스트 진행 현황<span class="sec-badge" id="dash-week-badge">—</span></span>
-          <span style="font-size:11px;color:var(--t3)" id="dash-cache-stat">캐시 로딩 중…</span>
+          <span class="sec-t"><span data-i18n="dash.tc.header" data-i18n-ko="테스트 진행 현황">테스트 진행 현황</span><span class="sec-badge" id="dash-week-badge">—</span></span>
+          <span style="font-size:11px;color:var(--t3)" id="dash-cache-stat" data-i18n="dash.cacheLoading" data-i18n-ko="캐시 로딩 중…">캐시 로딩 중…</span>
         </div>
         <!-- 컬럼 헤더 -->
         <div style="display:grid;grid-template-columns:1fr 1px 300px;background:#fafbfe;border-bottom:1px solid var(--bd)">
-          <div style="padding:7px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">TC 진행</div>
+          <div style="padding:7px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)" data-i18n="dash.tc.col" data-i18n-ko="TC 진행">TC 진행</div>
           <div style="background:var(--bd)"></div>
-          <div style="padding:7px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">이슈 현황</div>
+          <div style="padding:7px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)" data-i18n="dash.issue.col" data-i18n-ko="이슈 현황">이슈 현황</div>
         </div>
         <!-- 동적 행 컨테이너 -->
         <div id="dash-tc-rows">
@@ -144,7 +128,7 @@
       <!-- 최근 이슈 요약 -->
       <div class="card" style="overflow:hidden" id="dash-recent-card">
         <div class="card-hd" style="justify-content:space-between">
-          <span class="sec-t">최근 이슈 요약<span class="sec-badge">이번 주</span></span>
+          <span class="sec-t"><span data-i18n="dash.recent.header" data-i18n-ko="최근 이슈 요약">최근 이슈 요약</span><span class="sec-badge" data-i18n="dash.recent.badge" data-i18n-ko="이번 주">이번 주</span></span>
           <span id="weekly-bugs-summary" style="font-size:11px;color:var(--t3)">불러오는 중…</span>
         </div>
         <!-- 이슈 테이블 -->
@@ -152,12 +136,12 @@
           <table class="issue-tbl">
             <thead>
               <tr>
-                <th style="width:80px">심각도</th>
-                <th style="width:80px">키</th>
-                <th>제목</th>
-                <th style="width:80px">상태</th>
-                <th style="width:130px">담당자</th>
-                <th style="width:56px">등록일</th>
+                <th style="width:80px" data-i18n="tbl.severity" data-i18n-ko="심각도">심각도</th>
+                <th style="width:80px" data-i18n="tbl.key" data-i18n-ko="키">키</th>
+                <th data-i18n="tbl.title" data-i18n-ko="제목">제목</th>
+                <th style="width:80px" data-i18n="tbl.status" data-i18n-ko="상태">상태</th>
+                <th style="width:130px" data-i18n="tbl.assignee" data-i18n-ko="담당자">담당자</th>
+                <th style="width:56px" data-i18n="tbl.created" data-i18n-ko="등록일">등록일</th>
               </tr>
             </thead>
             <tbody id="weekly-bugs-list">
@@ -167,7 +151,7 @@
         </div>
         <!-- 더보기 -->
         <div style="padding:9px 20px;background:#fafbfe;border-top:1px solid var(--bd);text-align:center">
-          <span style="font-size:11px;color:var(--acc);font-weight:600;cursor:pointer" onclick="showPage('game-issues',document.querySelectorAll('.nav')[1])">전체 보기 →</span>
+          <span style="font-size:11px;color:var(--acc);font-weight:600;cursor:pointer" onclick="showPage('game-issues',document.querySelectorAll('.nav')[1])" data-i18n="dash.viewAll" data-i18n-ko="전체 보기 →">전체 보기 →</span>
         </div>
       </div>
 
@@ -175,13 +159,13 @@
       <div class="card tl-card" id="tl-card">
         <div style="padding:16px 20px 0">
           <div class="sec-hd">
-            <span class="sec-t">슬롯 일정 타임라인</span>
-            <span class="see-all" onclick="showPage('schedule',document.querySelectorAll('.nav')[3])">전체 보기 →</span>
+            <span class="sec-t" data-i18n="dash.timeline.header" data-i18n-ko="슬롯 일정 타임라인">슬롯 일정 타임라인</span>
+            <span class="see-all" onclick="showPage('schedule',document.querySelectorAll('.nav')[3])" data-i18n="dash.viewAll" data-i18n-ko="전체 보기 →">전체 보기 →</span>
           </div>
         </div>
         <div class="tl-head">
-          <div class="tl-hc">게임</div>
-          <div class="tl-hc" style="text-align:center;padding:8px 4px">담당 QA</div>
+          <div class="tl-hc" data-i18n="dash.game" data-i18n-ko="게임">게임</div>
+          <div class="tl-hc" style="text-align:center;padding:8px 4px" data-i18n="dash.assignedQA" data-i18n-ko="담당 QA">담당 QA</div>
           <div class="tl-weeks" id="tl-weeks">
             <div class="tl-wk" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;font-weight:600;color:var(--t3);border-left:1px solid var(--bd)">불러오는 중…</div>
           </div>
@@ -197,7 +181,7 @@
       <!-- 상단: 돌아가기 + 쿼리 -->
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <button class="sr-back" onclick="goBackFromSearch()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>돌아가기
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><span data-i18n="sr.back" data-i18n-ko="돌아가기">돌아가기</span>
         </button>
         <span class="sr-query" id="sr-query-text"></span>
         <span class="sr-count" id="sr-count"></span>
@@ -205,14 +189,14 @@
       <!-- 필터 탭 -->
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="sr-tabs">
-          <div class="sr-tab on" onclick="srSetFilter('all',this)">전체 <span class="sr-tab-cnt" id="sr-cnt-all">0</span></div>
+          <div class="sr-tab on" onclick="srSetFilter('all',this)"><span data-i18n="sr.all" data-i18n-ko="전체">전체</span> <span class="sr-tab-cnt" id="sr-cnt-all">0</span></div>
           <div class="sr-tab" onclick="srSetFilter('jira',this)">Jira <span class="sr-tab-cnt" id="sr-cnt-jira">0</span></div>
           <div class="sr-tab" onclick="srSetFilter('confluence',this)">Confluence <span class="sr-tab-cnt" id="sr-cnt-conf">0</span></div>
           <div class="sr-tab" onclick="srSetFilter('drive',this)">Drive <span class="sr-tab-cnt" id="sr-cnt-drive">0</span></div>
           <div class="sr-tab" onclick="srSetFilter('slack',this)">Slack <span class="sr-tab-cnt" id="sr-cnt-slack">0</span></div>
         </div>
         <div style="width:1px;height:18px;background:var(--bd);margin:0 2px" id="sr-divider" style="display:none"></div>
-        <div class="sr-bug-toggle" id="sr-bug-toggle" onclick="srToggleBug(this)" style="display:none">⚠ 버그만</div>
+        <div class="sr-bug-toggle" id="sr-bug-toggle" onclick="srToggleBug(this)" style="display:none" data-i18n="sr.bugOnly" data-i18n-ko="⚠ 버그만">⚠ 버그만</div>
       </div>
       <div id="sr-warnings" style="display:none;margin-bottom:8px;padding:8px 12px;border-radius:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);font-size:11px;color:var(--red);flex-direction:column;gap:4px"></div>
       <div id="sr-results"></div>
@@ -229,13 +213,13 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
             </div>
             <div class="chat-welcome-t">Hub AI</div>
-            <div class="chat-welcome-s">Jira · Confluence 데이터를 기반으로 질문하세요.<br>이슈 패턴 분석, 히스토리 조회, 통계 요약을 도와드립니다.</div>
+            <div class="chat-welcome-s" data-i18n-html="ai.welcomeSub" data-i18n-html-ko="Jira · Confluence 데이터를 기반으로 질문하세요.<br>이슈 패턴 분석, 히스토리 조회, 통계 요약을 도와드립니다.">Jira · Confluence 데이터를 기반으로 질문하세요.<br>이슈 패턴 분석, 히스토리 조회, 통계 요약을 도와드립니다.</div>
           </div>
           <!-- 예시 대화 -->
           <div class="chat-msg ai" id="chat-ex-1">
             <div class="chat-av-ai"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></div>
             <div>
-              <div class="chat-bubble ai">안녕하세요! 게임, 이슈, 문서 뭐든 물어보세요 😊</div>
+              <div class="chat-bubble ai" data-i18n="ai.welcome" data-i18n-ko="안녕하세요! 게임, 이슈, 문서 뭐든 물어보세요 😊">안녕하세요! 게임, 이슈, 문서 뭐든 물어보세요 😊</div>
               <div class="chat-meta">Hub AI · 방금</div>
             </div>
           </div>
@@ -267,11 +251,11 @@
         <div class="chat-input-wrap" id="chat-input-wrap">
           <div class="chat-sugs" id="chat-sugs" style="display:flex;align-items:center;justify-content:space-between;gap:6px">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <span class="chat-sug" onclick="chatSuggestSend('이번 주 새로 등록된 이슈 목록 보여줘')">이번 주 등록 이슈</span>
-              <span class="chat-sug" onclick="chatSuggestSend('현재 오픈된 Critical 이슈 알려줘')">Critical 이슈 목록</span>
-              <span class="chat-sug" onclick="chatSuggest('게임 정보: ')">게임 정보 찾기</span>
+              <span class="chat-sug" onclick="chatSuggestSend('이번 주 새로 등록된 이슈 목록 보여줘')" data-i18n="ai.sug1" data-i18n-ko="이번 주 등록 이슈">이번 주 등록 이슈</span>
+              <span class="chat-sug" onclick="chatSuggestSend('현재 오픈된 Critical 이슈 알려줘')" data-i18n="ai.sug2" data-i18n-ko="Critical 이슈 목록">Critical 이슈 목록</span>
+              <span class="chat-sug" onclick="chatSuggest('게임 정보: ')" data-i18n="ai.sug3" data-i18n-ko="게임 정보 찾기">게임 정보 찾기</span>
             </div>
-            <span onclick="chatClear()" style="flex-shrink:0;font-size:11px;color:var(--t3);cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .12s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">대화 초기화</span>
+            <span onclick="chatClear()" style="flex-shrink:0;font-size:11px;color:var(--t3);cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .12s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" data-i18n="ai.clear" data-i18n-ko="대화 초기화">대화 초기화</span>
           </div>
           <div class="chat-input-row">
             <textarea class="chat-inp" id="chat-inp" placeholder="" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();chatSend()}"></textarea>
@@ -293,11 +277,11 @@
           <div class="sch-btn" onclick="schedNextMonth()">›</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <div class="add-sched-btn" onclick="openSchedModal(null)">+ 일정 추가</div>
-          <div class="add-sched-btn" onclick="openEventModal(null)" style="background:var(--sf);color:#7c3aed;border-color:#ddd6fe">+ 행사 추가</div>
+          <div class="add-sched-btn" onclick="openSchedModal(null)" data-i18n="sched.addSchedule" data-i18n-ko="+ 일정 추가">+ 일정 추가</div>
+          <div class="add-sched-btn" onclick="openEventModal(null)" style="background:var(--sf);color:#7c3aed;border-color:#ddd6fe" data-i18n="sched.addEvent" data-i18n-ko="+ 행사 추가">+ 행사 추가</div>
           <div class="view-toggle">
-            <div class="vt-btn on" id="vt-month" onclick="setView('month')">월별</div>
-            <div class="vt-btn" id="vt-week" onclick="setView('week')">주별</div>
+            <div class="vt-btn on" id="vt-month" onclick="setView('month')" data-i18n="sched.month" data-i18n-ko="월별">월별</div>
+            <div class="vt-btn" id="vt-week" onclick="setView('week')" data-i18n="sched.week" data-i18n-ko="주별">주별</div>
           </div>
         </div>
       </div>
@@ -334,13 +318,13 @@
       <div id="stat-cards-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
         <!-- 전체 -->
         <div class="card" style="padding:14px 16px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-bottom:10px">전체 이슈</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-bottom:10px" data-i18n="live.totalIssues" data-i18n-ko="전체 이슈">전체 이슈</div>
           <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:6px">
             <span id="stat-total" style="font-size:28px;font-weight:800;color:var(--t1);letter-spacing:-1px">—</span>
             <span id="stat-ytd-lbl" style="font-size:11px;color:var(--t3);padding-bottom:4px">YTD</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t3)">vs 전년:</span>
+            <span style="font-size:12px;color:var(--t3)" data-i18n="live.vsPrev" data-i18n-ko="vs 전년:">vs 전년:</span>
             <span id="stat-total-prev" style="font-size:12px;font-weight:700;color:var(--t2)">—</span>
             <span id="stat-total-diff" style="font-size:11px;font-weight:700;margin-left:2px"></span>
           </div>
@@ -353,7 +337,7 @@
             <span style="font-size:11px;color:var(--t3);padding-bottom:4px">YTD</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t3)">vs 전년:</span>
+            <span style="font-size:12px;color:var(--t3)" data-i18n="live.vsPrev" data-i18n-ko="vs 전년:">vs 전년:</span>
             <span id="stat-c-prev" style="font-size:12px;font-weight:700;color:var(--t2)">—</span>
             <span id="stat-c-diff" style="font-size:11px;font-weight:700;margin-left:2px"></span>
           </div>
@@ -366,7 +350,7 @@
             <span style="font-size:11px;color:var(--t3);padding-bottom:4px">YTD</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t3)">vs 전년:</span>
+            <span style="font-size:12px;color:var(--t3)" data-i18n="live.vsPrev" data-i18n-ko="vs 전년:">vs 전년:</span>
             <span id="stat-mj-prev" style="font-size:12px;font-weight:700;color:var(--t2)">—</span>
             <span id="stat-mj-diff" style="font-size:11px;font-weight:700;margin-left:2px"></span>
           </div>
@@ -379,7 +363,7 @@
             <span style="font-size:11px;color:var(--t3);padding-bottom:4px">YTD</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t3)">vs 전년:</span>
+            <span style="font-size:12px;color:var(--t3)" data-i18n="live.vsPrev" data-i18n-ko="vs 전년:">vs 전년:</span>
             <span id="stat-mn-prev" style="font-size:12px;font-weight:700;color:var(--t2)">—</span>
             <span id="stat-mn-diff" style="font-size:11px;font-weight:700;margin-left:2px"></span>
           </div>
@@ -392,7 +376,7 @@
       <!-- 월별 이슈 차트 -->
       <div class="card" id="live-chart-card" style="padding:18px 20px 14px;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <span class="sec-t">월별 이슈 발생 추이</span>
+          <span class="sec-t" data-i18n="live.monthlyTrend" data-i18n-ko="월별 이슈 발생 추이">월별 이슈 발생 추이</span>
           <div style="display:flex;align-items:center;gap:14px;font-size:11px">
             <div style="display:flex;align-items:center;gap:5px">
               <div style="width:10px;height:10px;border-radius:2px;background:var(--red)"></div><span style="color:var(--t2)">Critical</span>
@@ -405,7 +389,7 @@
             <div id="chart-legend-prev" style="display:flex;align-items:center;gap:5px;opacity:.5">
               <div style="width:28px;height:8px;border-radius:2px;background:#cbd5e1"></div><span id="chart-yr-prev" style="color:var(--t3)">—</span>
             </div>
-            <button id="chart-compare-btn" onclick="toggleChartCompare()" style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;border:1.5px solid var(--bd);background:#fff;color:var(--t3);cursor:pointer;transition:all .12s">전년 비교 OFF</button>
+            <button id="chart-compare-btn" onclick="toggleChartCompare()" style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;border:1.5px solid var(--bd);background:#fff;color:var(--t3);cursor:pointer;transition:all .12s" data-compare="0" data-i18n="live.compareOff" data-i18n-ko="전년 비교 OFF">전년 비교 OFF</button>
           </div>
         </div>
         <div id="live-chart-wrap" style="width:100%">
@@ -418,7 +402,7 @@
       <!-- 이슈 목록 (연도/월 드롭다운 필터) -->
       <div class="card" style="overflow:hidden">
         <div class="card-hd" style="flex-wrap:wrap">
-          <span class="sec-t">이슈 목록</span>
+          <span class="sec-t" data-i18n="live.issueList" data-i18n-ko="이슈 목록">이슈 목록</span>
           <!-- 연도 드롭다운 -->
           <select id="issue-yr" onchange="filterIssues()" style="border:1.5px solid var(--bd);border-radius:7px;padding:4px 8px;font-size:12px;font-weight:600;color:var(--t1);background:var(--sf);cursor:pointer;font-family:inherit;outline:none;margin-left:8px">
             <option value="2026">2026년</option>
@@ -447,7 +431,7 @@
           <span id="chip-total" style="font-size:11px;color:var(--t3);margin-left:auto">총 <strong style="color:var(--t1)">—건</strong></span>
         </div>
         <table class="issue-tbl">
-          <thead><tr><th style="width:90px">심각도</th><th style="width:90px">키</th><th>제목</th><th style="width:90px">상태</th><th style="width:140px">담당자</th><th style="width:70px">등록일</th></tr></thead>
+          <thead><tr><th style="width:90px" data-i18n="tbl.severity" data-i18n-ko="심각도">심각도</th><th style="width:90px" data-i18n="tbl.key" data-i18n-ko="키">키</th><th data-i18n="tbl.title" data-i18n-ko="제목">제목</th><th style="width:90px" data-i18n="tbl.status" data-i18n-ko="상태">상태</th><th style="width:140px" data-i18n="tbl.assignee" data-i18n-ko="담당자">담당자</th><th style="width:70px" data-i18n="tbl.created" data-i18n-ko="등록일">등록일</th></tr></thead>
           <tbody id="issue-tbody">
             <tr id="issue-loading">
               <td colspan="6" style="text-align:center;padding:24px;color:var(--t3);font-size:12px">불러오는 중…</td>
@@ -465,7 +449,7 @@
         <!-- left: game list -->
         <div class="gi-sidebar">
           <div class="gi-game-list" id="gi-game-list">
-            <div class="gi-list-hd">게임 목록</div>
+            <div class="gi-list-hd" data-i18n="gi.gameList" data-i18n-ko="게임 목록">게임 목록</div>
             <div style="padding:16px 10px;text-align:center;font-size:11px;color:var(--t3)">불러오는 중…</div>
           </div>
         </div>
@@ -498,32 +482,32 @@
 <div class="sched-modal-ov" id="event-modal" style="display:none" onclick="if(event.target===this)closeEventModal()">
   <div class="sched-modal-box">
     <div class="sm-hd">
-      <span class="sm-title" id="ev-modal-title">행사 추가</span>
+      <span class="sm-title" id="ev-modal-title" data-i18n="ev.addTitle" data-i18n-ko="행사 추가">행사 추가</span>
       <div class="pn-x" onclick="closeEventModal()">✕</div>
     </div>
     <div class="sm-body">
       <div class="sm-field">
-        <label class="sm-lbl">행사명</label>
-        <input class="sm-inp" type="text" id="ev-title" placeholder="예: 전사 워크샵"/>
+        <label class="sm-lbl" data-i18n="ev.name" data-i18n-ko="행사명">행사명</label>
+        <input class="sm-inp" type="text" id="ev-title" placeholder="예: 전사 워크샵" data-i18n-placeholder="ph.evTitle" data-i18n-placeholder-ko="예: 전사 워크샵"/>
       </div>
       <div class="sm-row">
         <div class="sm-field">
-          <label class="sm-lbl">시작일</label>
+          <label class="sm-lbl" data-i18n="ev.start" data-i18n-ko="시작일">시작일</label>
           <input class="sm-inp" type="date" id="ev-start"/>
         </div>
         <div class="sm-field">
-          <label class="sm-lbl">종료일</label>
+          <label class="sm-lbl" data-i18n="ev.end" data-i18n-ko="종료일">종료일</label>
           <input class="sm-inp" type="date" id="ev-end"/>
         </div>
       </div>
     </div>
     <div class="sm-ft">
       <div>
-        <button class="sm-cancel" id="ev-delete-btn" style="display:none;color:var(--red);border-color:var(--redbd)" onclick="deleteEvent()">삭제</button>
+        <button class="sm-cancel" id="ev-delete-btn" style="display:none;color:var(--red);border-color:var(--redbd)" onclick="deleteEvent()" data-i18n="ev.delete" data-i18n-ko="삭제">삭제</button>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="sm-cancel" onclick="closeEventModal()">취소</button>
-        <button class="sm-save" id="ev-save-btn" onclick="saveEvent()">저장</button>
+        <button class="sm-cancel" onclick="closeEventModal()" data-i18n="ev.cancel" data-i18n-ko="취소">취소</button>
+        <button class="sm-save" id="ev-save-btn" onclick="saveEvent()" data-i18n="ev.save" data-i18n-ko="저장">저장</button>
       </div>
     </div>
   </div>
@@ -533,14 +517,14 @@
 <div class="sched-modal-ov" id="sched-modal" style="display:none" onclick="if(event.target===this)closeSchedModal()">
   <div class="sched-modal-box" id="sched-modal-box">
     <div class="sm-hd">
-      <span class="sm-title" id="sm-modal-title">QA 일정 추가</span>
+      <span class="sm-title" id="sm-modal-title" data-i18n="sm.addTitle" data-i18n-ko="QA 일정 추가">QA 일정 추가</span>
       <div class="pn-x" onclick="closeSchedModal()">✕</div>
     </div>
     <div class="sm-body">
       <div class="sm-field">
-        <label class="sm-lbl">게임 타이틀</label>
+        <label class="sm-lbl" data-i18n="sm.gameTitle" data-i18n-ko="게임 타이틀">게임 타이틀</label>
         <div class="sm-game-wrap" id="sm-game-wrap">
-          <input class="sm-game-input" id="sm-game-input" type="text" placeholder="게임 검색…" autocomplete="off" readonly/>
+          <input class="sm-game-input" id="sm-game-input" type="text" placeholder="게임 검색…" autocomplete="off" readonly data-i18n-placeholder="ph.gameSearch" data-i18n-placeholder-ko="게임 검색…"/>
           <span class="sm-game-arrow">▾</span>
           <div class="sm-game-drop" id="sm-game-drop"></div>
         </div>
@@ -548,20 +532,32 @@
       </div>
       <div class="sm-row">
         <div class="sm-field">
-          <label class="sm-lbl">QA 시작일</label>
-          <input class="sm-inp" type="date" id="sm-qa-start"/>
+          <label class="sm-lbl" data-i18n="sm.qaStart" data-i18n-ko="QA 시작일">QA 시작일</label>
+          <div style="position:relative;display:flex;align-items:center">
+            <input class="sm-inp" type="text" id="sm-qa-start" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-qa-start-picker').showPicker()"/>
+            <input type="date" id="sm-qa-start-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-qa-start').value=this.value;this.value='';"/>
+            <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-qa-start-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          </div>
         </div>
         <div class="sm-field">
-          <label class="sm-lbl">QA 마감일</label>
-          <input class="sm-inp" type="date" id="sm-qa-end"/>
+          <label class="sm-lbl" data-i18n="sm.qaEnd" data-i18n-ko="QA 마감일">QA 마감일</label>
+          <div style="position:relative;display:flex;align-items:center">
+            <input class="sm-inp" type="text" id="sm-qa-end" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-qa-end-picker').showPicker()"/>
+            <input type="date" id="sm-qa-end-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-qa-end').value=this.value;this.value='';"/>
+            <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-qa-end-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          </div>
         </div>
       </div>
       <div class="sm-field">
-        <label class="sm-lbl">TC 작성 완료일 <span style="font-weight:400;color:var(--t3)">(선택)</span></label>
-        <input class="sm-inp" type="date" id="sm-tc-end"/>
+        <label class="sm-lbl"><span data-i18n="sm.tcEnd" data-i18n-ko="TC 작성 완료일">TC 작성 완료일</span> <span style="font-weight:400;color:var(--t3)" data-i18n="sm.optional" data-i18n-ko="(선택)">(선택)</span></label>
+        <div style="position:relative;display:flex;align-items:center">
+          <input class="sm-inp" type="text" id="sm-tc-end" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-tc-end-picker').showPicker()"/>
+          <input type="date" id="sm-tc-end-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-tc-end').value=this.value;this.value='';"/>
+          <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-tc-end-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        </div>
       </div>
       <div class="sm-field">
-        <label class="sm-lbl">담당자</label>
+        <label class="sm-lbl" data-i18n="sm.assignee" data-i18n-ko="담당자">담당자</label>
         <div class="sm-member-chips">
           <div class="sm-member-chip" data-name="DANYLO" onclick="smToggleMember(this)">Danylo</div>
           <div class="sm-member-chip" data-name="EUNJU" onclick="smToggleMember(this)">Eunju</div>
@@ -571,26 +567,26 @@
         <input type="hidden" id="sm-assignee"/>
       </div>
       <div class="sm-field">
-        <label class="sm-lbl">메모 <span style="font-weight:400;color:var(--t3)">(선택 — 연장 사유 등)</span></label>
-        <textarea class="sm-inp" id="sm-memo" rows="2" placeholder="예: 회사 행사로 일정 연장" style="resize:vertical;min-height:52px;font-family:inherit;font-size:12px"></textarea>
+        <label class="sm-lbl"><span data-i18n="sm.memo" data-i18n-ko="메모">메모</span> <span style="font-weight:400;color:var(--t3)" data-i18n="sm.memoOpt" data-i18n-ko="(선택 — 연장 사유 등)">(선택 — 연장 사유 등)</span></label>
+        <textarea class="sm-inp" id="sm-memo" rows="2" placeholder="예: 회사 행사로 일정 연장" style="resize:vertical;min-height:52px;font-family:inherit;font-size:12px" data-i18n-placeholder="ph.schedMemo" data-i18n-placeholder-ko="예: 회사 행사로 일정 연장"></textarea>
       </div>
       <div class="sm-field" id="sm-status-section" style="display:none">
-        <label class="sm-lbl">상태 변경</label>
+        <label class="sm-lbl" data-i18n="sm.statusChange" data-i18n-ko="상태 변경">상태 변경</label>
         <div class="sm-st-btns">
-          <div class="sm-st-btn" id="sm-btn-active" onclick="smSetStatus('active',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span>진행</div>
-          <div class="sm-st-btn" id="sm-btn-hold" onclick="smSetStatus('hold',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span>홀드</div>
-          <div class="sm-st-btn" id="sm-btn-extended" onclick="smSetStatus('extended',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span>연장</div>
-          <div class="sm-st-btn" id="sm-btn-done" onclick="smSetStatus('done',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span>완료</div>
+          <div class="sm-st-btn" id="sm-btn-active" onclick="smSetStatus('active',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span><span data-i18n="sm.active" data-i18n-ko="진행">진행</span></div>
+          <div class="sm-st-btn" id="sm-btn-hold" onclick="smSetStatus('hold',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span><span data-i18n="sm.hold" data-i18n-ko="홀드">홀드</span></div>
+          <div class="sm-st-btn" id="sm-btn-extended" onclick="smSetStatus('extended',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span><span data-i18n="sm.extended" data-i18n-ko="연장">연장</span></div>
+          <div class="sm-st-btn" id="sm-btn-done" onclick="smSetStatus('done',this)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.8"></span><span data-i18n="sm.done" data-i18n-ko="완료">완료</span></div>
         </div>
       </div>
     </div>
     <div class="sm-ft">
       <div>
-        <button class="sm-cancel" id="sm-delete-btn" style="display:none;color:var(--red);border-color:var(--redbd)" onclick="deleteSchedule()">삭제</button>
+        <button class="sm-cancel" id="sm-delete-btn" style="display:none;color:var(--red);border-color:var(--redbd)" onclick="deleteSchedule()" data-i18n="sm.delete" data-i18n-ko="삭제">삭제</button>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="sm-cancel" onclick="closeSchedModal()">취소</button>
-        <button class="sm-save" id="sm-save-btn" onclick="saveSchedule()">저장</button>
+        <button class="sm-cancel" onclick="closeSchedModal()" data-i18n="sm.cancel" data-i18n-ko="취소">취소</button>
+        <button class="sm-save" id="sm-save-btn" onclick="saveSchedule()" data-i18n="sm.save" data-i18n-ko="저장">저장</button>
       </div>
     </div>
   </div>
@@ -648,10 +644,11 @@ function setView(v){
 const _LI_STATUS_MAP={};
 function _liStBadge(st){
   const lo=(st||'').toLowerCase();
-  if(lo.includes('progress')||lo.includes('진행'))return'<span class="ist ist-ip">진행중</span>';
-  if(lo.includes('done')||lo.includes('완료')||lo.includes('closed')||lo.includes('fixed'))return'<span class="ist ist-dn">완료</span>';
-  if(lo.includes('review')||lo.includes('검토'))return'<span class="ist ist-rv">검토중</span>';
-  if(lo.includes('block')||lo.includes('차단'))return'<span class="ist" style="background:var(--redbg);color:var(--red)">차단됨</span>';
+  if(lo.includes('progress')||lo.includes('진행'))return`<span class="ist ist-ip" style="white-space:nowrap">${_tl('진행중','In Progress')}</span>`;
+  if(lo.includes('done')||lo.includes('완료')||lo.includes('closed')||lo.includes('fixed'))return`<span class="ist ist-dn" style="white-space:nowrap">${_tl('완료','Done')}</span>`;
+  if(lo.includes('review')||lo.includes('검토'))return`<span class="ist ist-rv" style="white-space:nowrap">${_tl('검토중','In Review')}</span>`;
+  if(lo.includes('block')||lo.includes('차단'))return`<span class="ist" style="background:var(--redbg);color:var(--red)">${_tl('차단됨','Blocked')}</span>`;
+  if(lo.includes('미해결')||lo==='open'||lo.includes('to do')||lo.includes('todo'))return`<span class="ist ist-td" style="white-space:nowrap">${_tl('미해결','Open')}</span>`;
   return`<span class="ist ist-td">${_pnEsc(st)}</span>`;
 }
 function _liDiff(cur,prev){
@@ -659,7 +656,7 @@ function _liDiff(cur,prev){
   const d=cur-prev;
   if(d===0)return`<span style="font-size:11px;color:var(--t3)">±0</span>`;
   const col=d>0?'var(--red)':'var(--green)';
-  return`<span style="font-size:11px;font-weight:700;color:${col}">${d>0?'↑'+d:'↓'+Math.abs(d)}건</span>`;
+  return`<span style="font-size:11px;font-weight:700;color:${col}">${d>0?'↑'+d:'↓'+Math.abs(d)}${_tl('건','')}</span>`;
 }
 function _updateStatCards(cur,prev){
   const yr=document.getElementById('issue-yr').value;
@@ -682,11 +679,11 @@ function _updateStatCards(cur,prev){
 function _renderIssueRows(issues){
   const tbody=document.getElementById('issue-tbody');
   if(!issues||issues.length===0){
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t3);font-size:12px">해당 기간에 등록된 이슈가 없습니다</td></tr>';
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t3);font-size:12px">${_tl('해당 기간에 등록된 이슈가 없습니다','No issues registered for this period')}</td></tr>`;
     document.getElementById('chip-c').textContent='Critical 0';
     document.getElementById('chip-mj').textContent='Major 0';
     document.getElementById('chip-mn').textContent='Minor 0';
-    document.getElementById('chip-total').innerHTML='총 <strong style="color:var(--t1)">0건</strong>';
+    document.getElementById('chip-total').innerHTML=`${_tl('총','Total')} <strong style="color:var(--t1)">0${_tl('건','')}</strong>`;
     return;
   }
   let c=0,mj=0,mn=0,html='';
@@ -712,7 +709,7 @@ function _renderIssueRows(issues){
   document.getElementById('chip-c').textContent='Critical '+c;
   document.getElementById('chip-mj').textContent='Major '+mj;
   document.getElementById('chip-mn').textContent='Minor '+mn;
-  document.getElementById('chip-total').innerHTML='총 <strong style="color:var(--t1)">'+issues.length+'건</strong>';
+  document.getElementById('chip-total').innerHTML=`${_tl('총','Total')} <strong style="color:var(--t1)">${issues.length}${_tl('건','')}</strong>`;
 }
 function _renderLiveChart(curData, prevData){
   const svg=document.getElementById('live-chart-svg'); if(!svg)return;
@@ -825,13 +822,13 @@ function toggleChartCompare(){
   const btn=document.getElementById('chart-compare-btn');
   const leg=document.getElementById('chart-legend-prev');
   if(_chartCompare){
-    btn.textContent='전년 비교 ON';
+    btn.textContent=_tl('전년 비교 ON','Prev Year ON');
     btn.style.borderColor='var(--accbd)';
     btn.style.color='var(--acc)';
     btn.style.background='var(--accbg)';
     if(leg) leg.style.opacity='1';
   } else {
-    btn.textContent='전년 비교 OFF';
+    btn.textContent=_tl('전년 비교 OFF','Prev Year OFF');
     btn.style.borderColor='var(--bd)';
     btn.style.color='var(--t3)';
     btn.style.background='#fff';
@@ -1081,19 +1078,19 @@ function showSearchResults(q){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-search-results').classList.add('active');
   document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
-  document.getElementById('page-title').textContent='검색 결과';
-  document.getElementById('page-sub').textContent='검색 중…';
+  document.getElementById('page-title').textContent=_tl('검색 결과','Search Results');
+  document.getElementById('page-sub').textContent=_tl('검색 중…','Searching…');
   document.getElementById('hub-search-drop').style.display='none';
   document.getElementById('sr-query-text').textContent='"'+q+'"';
   document.getElementById('sr-count').textContent='';
-  document.getElementById('sr-results').innerHTML='<div style="padding:48px;text-align:center;color:var(--t3);font-size:13px"><span class="spin-ic">⟳</span> 검색 중…</div>';
+  document.getElementById('sr-results').innerHTML=`<div style="padding:48px;text-align:center;color:var(--t3);font-size:13px"><span class="spin-ic">⟳</span> ${_tl('검색 중…','Searching…')}</div>`;
   fetch('/api/search?q='+encodeURIComponent(q))
     .then(r=>r.json())
     .then(data=>_renderSR(q,data))
     .catch(()=>{
       document.getElementById('sr-results').innerHTML=`<div style="padding:48px;text-align:center;font-size:13px">
-        <div style="color:var(--red);margin-bottom:12px">서버 연결 오류</div>
-        <button onclick="showSearchResults(${JSON.stringify(q)})" style="padding:6px 16px;border-radius:8px;border:1.5px solid var(--bd);background:var(--sf);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">재시도</button>
+        <div style="color:var(--red);margin-bottom:12px">${_tl('서버 연결 오류','Server connection error')}</div>
+        <button onclick="showSearchResults(${JSON.stringify(q)})" style="padding:6px 16px;border-radius:8px;border:1.5px solid var(--bd);background:var(--sf);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">${_tl('재시도','Retry')}</button>
       </div>`;
     });
 }
@@ -1135,8 +1132,8 @@ function _renderSR(q,data){
   // 탭 카운트 업데이트
   const jira=data.jira||[],conf=data.confluence||[],drive=data.drive||[],slack=data.slack||[];
   const total=jira.length+conf.length+drive.length+slack.length;
-  document.getElementById('page-sub').textContent=total+'건';
-  document.getElementById('sr-count').textContent='총 '+total+'건';
+  document.getElementById('page-sub').textContent=total+_tl('건','');
+  document.getElementById('sr-count').textContent=_tl('총','Total')+' '+total+_tl('건','');
   document.getElementById('sr-cnt-all').textContent=total;
   document.getElementById('sr-cnt-jira').textContent=jira.length;
   document.getElementById('sr-cnt-conf').textContent=conf.length;
@@ -1195,10 +1192,10 @@ function _drawSR(){
   }
   function confSectionHead(count,allConf){
     const spaces=[...new Set(allConf.map(r=>r.space||'').filter(Boolean))];
-    let tabs=`<div class="sr-space-tabs"><div class="sr-space-tab ${_confSpace==='all'?'on':''}" onclick="confSetSpace('all')">전체</div>`;
+    let tabs=`<div class="sr-space-tabs"><div class="sr-space-tab ${_confSpace==='all'?'on':''}" onclick="confSetSpace('all')">${_tl('전체','All')}</div>`;
     spaces.forEach(sp=>{tabs+=`<div class="sr-space-tab ${_confSpace===sp?'on':''}" onclick="confSetSpace('${sp.replace(/'/g,"\\'")}')">${sp}</div>`;});
     tabs+='</div>';
-    return `<div class="sr-source-head"><span class="sr-source-lbl">Confluence</span><span class="sr-source-cnt">${count}건</span>${tabs}</div>`;
+    return `<div class="sr-source-head"><span class="sr-source-lbl">Confluence</span><span class="sr-source-cnt">${count}${_tl('건','')}</span>${tabs}</div>`;
   }
 
   const _allJira=(_srData.jira||[]);
@@ -1212,7 +1209,7 @@ function _drawSR(){
   const showSlack=(_srFilter==='all'||_srFilter==='slack');
   // total: use unfiltered Jira count so toggle staying visible when no bugs
   const total=(showJira?_allJira.length:0)+(showConf?_allConf.length:0)+(showDrive?drive.length:0)+(showSlack?slack.length:0);
-  if(total===0){document.getElementById('sr-results').innerHTML='<div style="padding:60px;text-align:center;color:var(--t3)">검색 결과가 없습니다</div>';return;}
+  if(total===0){document.getElementById('sr-results').innerHTML=`<div style="padding:60px;text-align:center;color:var(--t3)">${_tl('검색 결과가 없습니다','No results found')}</div>`;return;}
 
   let html='';
 
@@ -1237,7 +1234,7 @@ function _drawSR(){
       });
       html+=`</div>`;
     } else {
-      html+=`<div style="padding:20px 4px;color:var(--t3);font-size:12px">버그 이슈가 없습니다</div>`;
+      html+=`<div style="padding:20px 4px;color:var(--t3);font-size:12px">${_tl('버그 이슈가 없습니다','No bug issues found')}</div>`;
     }
     html+='</div>';
   }
@@ -1265,10 +1262,10 @@ function _drawSR(){
   }
 
   if(showDrive&&drive.length>0){
-    html+=`<div class="sr-source-block"><div class="sr-source-head"><span class="sr-source-lbl">Drive</span><span class="sr-source-cnt">${drive.length}건</span></div><div class="sr-card-grid">`;
+    html+=`<div class="sr-source-block"><div class="sr-source-head"><span class="sr-source-lbl">Drive</span><span class="sr-source-cnt">${drive.length}${_tl('건','')}</span></div><div class="sr-card-grid">`;
     drive.forEach(r=>{
-      const subLabel=r.from_ontology?(r.mime_label||'문서'):'Google Drive';
-      const badge=r.from_ontology?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--accbg);color:var(--acc);border:1px solid var(--accbd);margin-left:4px">게임 문서</span>`:'';
+      const subLabel=r.from_ontology?(r.mime_label||_tl('문서','Document')):'Google Drive';
+      const badge=r.from_ontology?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--accbg);color:var(--acc);border:1px solid var(--accbd);margin-left:4px">${_tl('게임 문서','Game Doc')}</span>`:'';
       html+=`<a class="sr-card" href="${esc(r.url||'#')}" target="_blank">
         <div style="display:flex;gap:10px;align-items:flex-start">
           <div class="src-card-icon drive">${DRIVE_SVG}</div>
@@ -1283,14 +1280,14 @@ function _drawSR(){
   }
 
   if(showSlack&&slack.length>0){
-    html+=`<div class="sr-source-block"><div class="sr-source-head"><span class="sr-source-lbl">Slack</span><span class="sr-source-cnt">${slack.length}건</span></div><div class="sr-card-grid">`;
+    html+=`<div class="sr-source-block"><div class="sr-source-head"><span class="sr-source-lbl">Slack</span><span class="sr-source-cnt">${slack.length}${_tl('건','')}</span></div><div class="sr-card-grid">`;
     slack.forEach(r=>{
       html+=`<a class="sr-card" href="${esc(r.url||'#')}" target="_blank">
         <div style="display:flex;gap:10px;align-items:flex-start">
           <div class="src-card-icon slack">${SLACK_SVG}</div>
           <div class="src-card-body">
             <div class="src-card-title">#${esc(r.name||'')}</div>
-            <div class="src-card-sub">Slack 채널</div>
+            <div class="src-card-sub">${_tl('Slack 채널','Slack Channel')}</div>
           </div>
         </div>
       </a>`;
@@ -1328,10 +1325,10 @@ async function filterIssues(){
 function _pnEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function _jiraStBadge(st){
   const lo=(st||'').toLowerCase();
-  if(lo.includes('progress')||lo.includes('진행'))return`<span class="jt-st st-ip">진행중</span>`;
-  if(lo.includes('done')||lo.includes('완료')||lo.includes('closed'))return`<span class="jt-st st-dn">완료</span>`;
-  if(lo.includes('review')||lo.includes('검토'))return`<span class="jt-st st-rv">검토중</span>`;
-  if(lo.includes('block')||lo.includes('차단'))return`<span class="jt-st" style="background:var(--redbg);color:var(--red)">차단됨</span>`;
+  if(lo.includes('progress')||lo.includes('진행'))return`<span class="jt-st st-ip" style="white-space:nowrap">${_tl('진행중','In Progress')}</span>`;
+  if(lo.includes('done')||lo.includes('완료')||lo.includes('closed'))return`<span class="jt-st st-dn" style="white-space:nowrap">${_tl('완료','Done')}</span>`;
+  if(lo.includes('review')||lo.includes('검토'))return`<span class="jt-st st-rv" style="white-space:nowrap">${_tl('검토중','In Review')}</span>`;
+  if(lo.includes('block')||lo.includes('차단'))return`<span class="jt-st" style="background:var(--redbg);color:var(--red)">${_tl('차단됨','Blocked')}</span>`;
   return`<span class="jt-st st-td">${_pnEsc(st)}</span>`;
 }
 function _driveIcon(){
@@ -1393,10 +1390,10 @@ function _renderPanelBody(g, data, links, driveLoading){
   // ── Slack ──
   b+=`<div><div class="pn-sec-lbl">${_PN_SLACK}Slack</div>`;
   if(slack.length===0){
-    b+=`<div style="font-size:11px;color:var(--t3);padding:8px 0">검색된 채널 없음</div>`;
+    b+=`<div style="font-size:11px;color:var(--t3);padding:8px 0">${_tl('검색된 채널 없음','No channels found')}</div>`;
   } else {
     slack.slice(0,5).forEach(ch=>{
-      const archBadge=ch.archived?`<span style="font-size:10px;color:var(--t3);background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1px 5px;margin-left:auto">보관됨</span>`:'';
+      const archBadge=ch.archived?`<span style="font-size:10px;color:var(--t3);background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1px 5px;margin-left:auto">${_tl('보관됨','Archived')}</span>`:'';
       b+=`<a class="slack-hd" href="${ch.url||'#'}" target="_blank" rel="noopener" style="text-decoration:none"><span class="slack-ch">#${_pnEsc(ch.name)}</span>${archBadge}</a>`;
     });
   }
@@ -1405,7 +1402,7 @@ function _renderPanelBody(g, data, links, driveLoading){
   // ── Jira ──
   b+=`<div><div class="pn-sec-lbl">${_PN_JIRA}Jira</div>`;
   if(jira.length===0){
-    b+=`<div style="font-size:11px;color:var(--t3);padding:8px 0">검색된 이슈 없음</div>`;
+    b+=`<div style="font-size:11px;color:var(--t3);padding:8px 0">${_tl('검색된 이슈 없음','No issues found')}</div>`;
   } else {
     const _isEpic=t=>t.type==='에픽'||t.type==='Epic';
     const epics=jira.filter(_isEpic);
@@ -1419,7 +1416,7 @@ function _renderPanelBody(g, data, links, driveLoading){
     if(hidden>0){
       const _jql=`project = GS AND text ~ "${(g.name||'').replace(/"/g,'')}" ORDER BY updated DESC`;
       const _jiraUrl=`https://bagelcode.atlassian.net/issues/?jql=${encodeURIComponent(_jql)}`;
-      b+=`<a href="${_jiraUrl}" target="_blank" rel="noopener" style="font-size:11px;color:var(--t3);padding:6px 0 0;text-decoration:none;display:block">+ ${hidden}건 더 ↗</a>`;
+      b+=`<a href="${_jiraUrl}" target="_blank" rel="noopener" style="font-size:11px;color:var(--t3);padding:6px 0 0;text-decoration:none;display:block">+ ${hidden}${_tl('건','')}&nbsp;${_tl('더','more')} ↗</a>`;
     }
   }
   b+=`</div>`;
@@ -1480,7 +1477,7 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
     const codeUpper=gameObj.tc_prefix?gameObj.tc_prefix.toUpperCase():'';
     const codeTag=codeUpper?`<span class="pn-tag" style="background:var(--bg);color:var(--t2)"><span style="color:var(--t3);font-weight:600">TITLE</span>&nbsp;${codeUpper}</span>`:'';
     const idTag=gameObj.game_id?`<span class="pn-tag" style="background:var(--bg);color:var(--t2)"><span style="color:var(--t3);font-weight:600">ID</span>&nbsp;${gameObj.game_id}</span>`:'';
-    const dueTag=dueVal?`<span class="pn-tag" style="${gameObj.red?'background:var(--redbg);color:var(--red)':'background:var(--bg);color:var(--t3)'}">마감 ${dueVal}</span>`:'';
+    const dueTag=dueVal?`<span class="pn-tag" style="${gameObj.red?'background:var(--redbg);color:var(--red)':'background:var(--bg);color:var(--t3)'}">${_tl('마감','Due')} ${dueVal}</span>`:'';
     document.getElementById('pn-meta').innerHTML=`${codeTag}${idTag}${dueTag}`;
   }
 
@@ -1558,7 +1555,7 @@ async function openPanel(key,el,qaSheetId,schedAssignee,schedDue){
     _injectTc(c.fullData,c.fullLinks);
     _renderPanelBody(g,c.fullData,c.fullLinks,false);
   }else{
-    document.getElementById('pn-body').innerHTML='<div style="padding:32px 20px;text-align:center;font-size:12px;color:var(--t3)">불러오는 중…</div>';
+    document.getElementById('pn-body').innerHTML=`<div style="padding:32px 20px;text-align:center;font-size:12px;color:var(--t3)">${_tl('불러오는 중…','Loading…')}</div>`;
     try{
       // 1단계: Jira/Conf/Slack + CTD/SOUND/VFX 즉시 렌더 (GDD/MATH만 로딩 표시)
       const [fastData,fastLinks]=await Promise.all([fastPromise,glFastPromise]);
@@ -1627,7 +1624,7 @@ document.querySelectorAll('.src-chip').forEach(c=>{
     const total=jira.length+conf.length+drive.length+slack.length;
 
     if(total===0){
-      drop.innerHTML='<div class="sd-empty">검색 결과가 없습니다</div>';
+      drop.innerHTML=`<div class="sd-empty">${_tl('검색 결과가 없습니다','No results found')}</div>`;
       return;
     }
 
@@ -1696,7 +1693,7 @@ document.querySelectorAll('.src-chip').forEach(c=>{
   function doSearch(){
     const q=inp.value.trim();
     if(!q){drop.style.display='none';return;}
-    drop.innerHTML='<div class="sd-loading">검색 중…</div>';
+    drop.innerHTML=`<div class="sd-loading">${_tl('검색 중…','Searching…')}</div>`;
     drop.style.display='block';
     const chips=activeChips();
     fetch('/api/search?q='+encodeURIComponent(q))
@@ -1710,7 +1707,7 @@ document.querySelectorAll('.src-chip').forEach(c=>{
         };
         render(filtered,chips);
       })
-      .catch(()=>{drop.innerHTML='<div class="sd-empty">서버 연결 오류</div>';});
+      .catch(()=>{drop.innerHTML=`<div class="sd-empty">${_tl('서버 연결 오류','Server error')}</div>`;});
   }
 
   inp.addEventListener('input',()=>{
@@ -1784,6 +1781,9 @@ let _schedLoaded=false;
 
 const _STATUS_CLS={pending:'ev-plan',tc:'ev-tc',testing:'ev-qa',hold:'ev-hold',extended:'ev-ext',done:'ev-done',needs_action:'ev-late'};
 const _STATUS_LBL={pending:'QA 예정',tc:'TC 작성중',testing:'테스트중',hold:'홀드',extended:'연장',done:'완료',needs_action:'⚠ 지연'};
+const _STATUS_LBL_EN={pending:'QA Planned',tc:'Writing TC',testing:'Testing',hold:'On Hold',extended:'Extended',done:'Done',needs_action:'⚠ Delayed'};
+function _tl(ko,en){return typeof _lang!=='undefined'&&_lang==='en'?en:ko;}
+function _statusLbl(k){return _tl(_STATUS_LBL[k]||k,_STATUS_LBL_EN[k]||k);}
 
 function _dateStr(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -1802,7 +1802,7 @@ function _qaColor(name){
 }
 // QA 이름 표기 포맷 (HYEWON → Hyewon, 미배정 처리)
 function _qaDisplayName(assignee){
-  if(!assignee||!assignee.trim())return'미배정';
+  if(!assignee||!assignee.trim())return _tl('미배정','Unassigned');
   return assignee.split(/[\/]+/).filter(Boolean)
     .map(n=>n.charAt(0).toUpperCase()+n.slice(1).toLowerCase()).join('/');
 }
@@ -1830,7 +1830,8 @@ async function _loadHolidays(year){
 async function renderCalendar(year,month){
   _schedYear=year;_schedMonth=month;
   await _loadHolidays(year);
-  document.getElementById('sch-month-lbl').textContent=year+'년 '+month+'월';
+  const _mnEn=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('sch-month-lbl').textContent=_tl(year+'년 '+month+'월',_mnEn[month-1]+' '+year);
   const today=new Date();
   const todayStr=_dateStr(today);
   const firstDay=new Date(year,month-1,1);
@@ -1897,7 +1898,7 @@ async function renderCalendar(year,month){
   if(late.length>0){
     banner.style.display='block';
     banner.className='sched-banner';
-    banner.innerHTML='⚠ 처리 필요: '+late.map(e=>e.game_name.replace('SB_','')).join(', ')+' — QA 종료일이 지났습니다. 상태를 업데이트해주세요.';
+    banner.innerHTML=`⚠ ${_tl('처리 필요','Action Required')}: `+late.map(e=>e.game_name.replace('SB_','')).join(', ')+` — ${_tl('QA 종료일이 지났습니다. 상태를 업데이트해주세요.','QA end date has passed. Please update the status.')}`;
   }else{banner.style.display='none';}
   // Update week view headers
   _renderWeekView();
@@ -1987,7 +1988,7 @@ function renderTimeline(){
   tlWeeks.innerHTML=wkHtml;
   const visible=_schedData.filter(e=>e.qa_start&&e.qa_end&&e.qa_end>=wsStr&&e.qa_start<=weStr);
   if(visible.length===0){
-    tlRows.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--t3)">이 기간에 등록된 QA 일정이 없습니다</div>';
+    tlRows.innerHTML=`<div style="padding:20px;text-align:center;font-size:12px;color:var(--t3)">${_tl('이 기간에 등록된 QA 일정이 없습니다','No QA schedules for this period')}</div>`;
     return;
   }
   const totalMs=28*86400000;
@@ -2001,14 +2002,14 @@ function renderTimeline(){
     const endMs=Math.min(endD.getTime()+86400000,windowEnd.getTime()+86400000);
     const leftPct=Math.max(0,(startMs-monday.getTime())/totalMs*100);
     const widthPct=Math.max(2,(endMs-startMs)/totalMs*100);
-    let barCls='b-qa',barLabel='QA 진행중';
-    if(status==='pending'){barCls='b-plan';barLabel='QA 예정';}
-    else if(status==='tc'){barCls='b-qa';barLabel='TC 작성중';}
-    else if(status==='testing'){barCls='b-qa';barLabel='테스트중';}
-    else if(status==='hold'){barCls='b-dev';barLabel='홀드';}
-    else if(status==='extended'){barCls='b-late';barLabel='연장';}
-    else if(status==='done'){barCls='b-done';barLabel='완료';}
-    else if(status==='needs_action'){barCls='b-late';barLabel='⚠ 지연';}
+    let barCls='b-qa',barLabel=_tl('QA 진행중','In Progress');
+    if(status==='pending'){barCls='b-plan';barLabel=_tl('QA 예정','QA Planned');}
+    else if(status==='tc'){barCls='b-qa';barLabel=_tl('TC 작성중','Writing TC');}
+    else if(status==='testing'){barCls='b-qa';barLabel=_tl('테스트중','Testing');}
+    else if(status==='hold'){barCls='b-dev';barLabel=_tl('홀드','On Hold');}
+    else if(status==='extended'){barCls='b-late';barLabel=_tl('연장','Extended');}
+    else if(status==='done'){barCls='b-done';barLabel=_tl('완료','Done');}
+    else if(status==='needs_action'){barCls='b-late';barLabel=_tl('⚠ 지연','⚠ Delayed');}
     const eid=entry.id.replace(/'/g,"\\'");
     const safeGameName=entry.game_name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const safeSheetId=(entry.qa_sheet_id||'').replace(/'/g,"\\'");
@@ -2135,7 +2136,7 @@ async function openSchedModal(id){
     _initGameDropEvents();
     document.getElementById('sm-game-input')._dropInited=true;
   }
-  document.getElementById('sm-modal-title').textContent=id?'QA 일정 수정':'QA 일정 추가';
+  document.getElementById('sm-modal-title').textContent=id?_tl('QA 일정 수정','Edit QA Schedule'):_tl('QA 일정 추가','Add QA Schedule');
   document.getElementById('sm-status-section').style.display=id?'flex':'none';
   document.getElementById('sm-delete-btn').style.display=id?'inline-block':'none';
   document.querySelectorAll('.sm-st-btn').forEach(b=>{b.style.borderColor='';b.style.color='';b.style.background='var(--sf)';});
@@ -2159,7 +2160,7 @@ async function openSchedModal(id){
     document.getElementById('sm-memo').value='';
     smResetAssignee();
   }
-  document.getElementById('sm-save-btn').textContent='저장';
+  document.getElementById('sm-save-btn').textContent=_tl('저장','Save');
   document.getElementById('sm-save-btn').disabled=false;
   document.getElementById('sched-modal').style.display='flex';
 }
@@ -2199,9 +2200,9 @@ async function saveSchedule(){
   const qaEnd=document.getElementById('sm-qa-end').value;
   const tcEnd=document.getElementById('sm-tc-end').value;
   const assignee=document.getElementById('sm-assignee').value;
-  if(!gameName||!qaStart||!qaEnd){_toast('게임, QA 시작일, 마감일은 필수입니다.','warn');return;}
+  if(!gameName||!qaStart||!qaEnd){_toast(_tl('게임, QA 시작일, 마감일은 필수입니다.','Game, QA start date, and due date are required.'),'warn');return;}
   const btn=document.getElementById('sm-save-btn');
-  btn.textContent='저장 중…';btn.disabled=true;
+  btn.textContent=_tl('저장 중…','Saving…');btn.disabled=true;
   try{
     const memo=document.getElementById('sm-memo').value;
     const body={game_name:gameName,type:gameType,assignee,qa_start:qaStart,qa_end:qaEnd,tc_end:tcEnd,status:_smStatus,memo};
@@ -2218,10 +2219,10 @@ async function saveSchedule(){
     renderDashboardTcCard();
     _giLoaded=false; loadGameIssuesList();
     _notifDetect();
-  }catch(e){_toast('저장 중 오류: '+e.message,'error');btn.textContent='저장';btn.disabled=false;}
+  }catch(e){_toast(_tl('저장 중 오류: ','Save error: ')+e.message,'error');btn.textContent=_tl('저장','Save');btn.disabled=false;}
 }
 async function deleteSchedule(){
-  if(!_smEditId||!confirm('이 일정을 삭제하시겠습니까?'))return;
+  if(!_smEditId||!confirm(_tl('이 일정을 삭제하시겠습니까?','Delete this schedule?')))return;
   try{
     await fetch('/api/schedule/'+_smEditId,{method:'DELETE'});
     closeSchedModal();
@@ -2233,14 +2234,14 @@ async function deleteSchedule(){
     renderDashboardTcCard();
     _giLoaded=false; loadGameIssuesList();
     _notifDetect();
-  }catch(e){_toast('삭제 중 오류가 발생했습니다.','error');}
+  }catch(e){_toast(_tl('삭제 중 오류가 발생했습니다.','Failed to delete.'),'error');}
 }
 
 // ── Event Modal ──────────────────────────────────────────
 let _evEditId=null;
 function openEventModal(id){
   _evEditId=id||null;
-  document.getElementById('ev-modal-title').textContent=id?'행사 수정':'행사 추가';
+  document.getElementById('ev-modal-title').textContent=id?_tl('행사 수정','Edit Event'):_tl('행사 추가','Add Event');
   document.getElementById('ev-delete-btn').style.display=id?'inline-block':'none';
   if(id){
     const ev=_eventsData.find(e=>e.id===id);
@@ -2254,7 +2255,7 @@ function openEventModal(id){
     document.getElementById('ev-start').value='';
     document.getElementById('ev-end').value='';
   }
-  document.getElementById('ev-save-btn').textContent='저장';
+  document.getElementById('ev-save-btn').textContent=_tl('저장','Save');
   document.getElementById('ev-save-btn').disabled=false;
   document.getElementById('event-modal').style.display='flex';
 }
@@ -2263,9 +2264,9 @@ async function saveEvent(){
   const title=document.getElementById('ev-title').value.trim();
   const start=document.getElementById('ev-start').value;
   const end=document.getElementById('ev-end').value;
-  if(!title||!start||!end){_toast('행사명, 시작일, 종료일은 필수입니다.','warn');return;}
+  if(!title||!start||!end){_toast(_tl('행사명, 시작일, 종료일은 필수입니다.','Event name, start date, and end date are required.'),'warn');return;}
   const btn=document.getElementById('ev-save-btn');
-  btn.textContent='저장 중…';btn.disabled=true;
+  btn.textContent=_tl('저장 중…','Saving…');btn.disabled=true;
   try{
     const body={title,start,end};
     const url=_evEditId?'/api/events/'+_evEditId:'/api/events';
@@ -2275,16 +2276,16 @@ async function saveEvent(){
     closeEventModal();
     try{const r=await fetch('/api/events');_eventsData=await r.json();}catch(e){_eventsData=[];}
     renderCalendar(_schedYear,_schedMonth);
-  }catch(e){_toast('저장 중 오류: '+e.message,'error');btn.textContent='저장';btn.disabled=false;}
+  }catch(e){_toast(_tl('저장 중 오류: ','Save error: ')+e.message,'error');btn.textContent=_tl('저장','Save');btn.disabled=false;}
 }
 async function deleteEvent(){
-  if(!_evEditId||!confirm('이 행사를 삭제하시겠습니까?'))return;
+  if(!_evEditId||!confirm(_tl('이 행사를 삭제하시겠습니까?','Delete this event?')))return;
   try{
     await fetch('/api/events/'+_evEditId,{method:'DELETE'});
     closeEventModal();
     try{const r=await fetch('/api/events');_eventsData=await r.json();}catch(e){_eventsData=[];}
     renderCalendar(_schedYear,_schedMonth);
-  }catch(e){_toast('삭제 중 오류가 발생했습니다.','error');}
+  }catch(e){_toast(_tl('삭제 중 오류가 발생했습니다.','Failed to delete.'),'error');}
 }
 
 // ── Slot Issues (Game Issues) ─────────────────────────────
@@ -2386,9 +2387,9 @@ function _renderBugChartFor(safeKey){
     <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#f6a623;display:inline-block;flex-shrink:0"></span>Major</span>
     <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#dde3ef;border:1px solid #c5cedd;display:inline-block;flex-shrink:0"></span>Minor</span>`;
   const legendSta=`
-    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#3b7ee8;display:inline-block;flex-shrink:0"></span>등록</span>
-    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#10b981;display:inline-block;flex-shrink:0"></span>완료</span>
-    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#f87171;display:inline-block;flex-shrink:0"></span>잔여</span>`;
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#3b7ee8;display:inline-block;flex-shrink:0"></span>${_tl('등록','Created')}</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#10b981;display:inline-block;flex-shrink:0"></span>${_tl('완료','Done')}</span>
+    <span style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)"><span style="width:7px;height:7px;border-radius:2px;background:#f87171;display:inline-block;flex-shrink:0"></span>${_tl('잔여','Remaining')}</span>`;
 
   // ── 등록/완료/잔여 SVG 계산 ──
   let svgSta='';
@@ -2452,13 +2453,13 @@ function _renderBugChartFor(safeKey){
         <button onclick="_giCardState['${safeKey}'].weekOffset--;_giCardState['${safeKey}'].dayFilter=null;_renderBugChartFor('${safeKey}')" style="${btnStyle}" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t3)'">‹</button>
         <div style="display:flex;align-items:center;gap:4px;padding:3px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--sf)">
           <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#94a3b8" stroke-width="1.5" style="flex-shrink:0"><rect x="1.5" y="1.5" width="11" height="11" rx="2"/><line x1="4" y1="7" x2="10" y2="7"/><line x1="7" y1="4" x2="7" y2="10"/></svg>
-          <span style="font-size:9px;color:var(--t3)">조회 주차</span>
+          <span style="font-size:9px;color:var(--t3)">${_tl('조회 주차','Week')}</span>
           <span style="font-size:11px;font-weight:600;color:var(--t2)">${weekLabel}</span>
         </div>
         <button onclick="_giCardState['${safeKey}'].weekOffset++;_giCardState['${safeKey}'].dayFilter=null;_renderBugChartFor('${safeKey}')" style="${btnStyle}" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t3)'">›</button>
         <div style="display:flex;gap:1px;background:#f1f5f9;border-radius:6px;padding:2px;border:1px solid var(--bd);margin-left:4px">
-          <button onclick="_giCardState['${safeKey}'].chartTab='sev';_renderBugChartFor('${safeKey}')" style="${tab==='sev'?tabOn:tabOff}">심각도별</button>
-          <button onclick="_giCardState['${safeKey}'].chartTab='sta';_renderBugChartFor('${safeKey}')" style="${tab==='sta'?tabOn:tabOff}">등록 / 완료 / 잔여</button>
+          <button onclick="_giCardState['${safeKey}'].chartTab='sev';_renderBugChartFor('${safeKey}')" style="${tab==='sev'?tabOn:tabOff}">${_tl('심각도별','By Severity')}</button>
+          <button onclick="_giCardState['${safeKey}'].chartTab='sta';_renderBugChartFor('${safeKey}')" style="${tab==='sta'?tabOn:tabOff}">${_tl('등록 / 완료 / 잔여','Created / Done / Remaining')}</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">${tab==='sev'?legendSev:legendSta}</div>
@@ -2499,7 +2500,7 @@ function _filterGiDay(safeKey, dateStr){
       const label=(d.getMonth()+1)+'/'+d.getDate();
       const safeK=safeKey.replace(/'/g,"\\'");
       const safeD=newFilter.replace(/'/g,"\\'");
-      ind.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:6px 0 6px"><span style="font-size:11px;font-weight:600;color:var(--acc)">${label} 등록 이슈만 표시 중</span><button onclick="_filterGiDay('${safeK}','${safeD}')" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--t3);cursor:pointer">전체 보기</button></div>`;
+      ind.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:6px 0 6px"><span style="font-size:11px;font-weight:600;color:var(--acc)">${label} ${_tl('등록 이슈만 표시 중','issues only')}</span><button onclick="_filterGiDay('${safeK}','${safeD}')" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--t3);cursor:pointer">${_tl('전체 보기','View all')}</button></div>`;
     }else{
       ind.innerHTML='';
     }
@@ -2542,7 +2543,7 @@ async function _renderMemoStrip(safeKey, gameName, days){
     } else {
       stripHtml += `<div class="memo-cell" data-key="${safeKey}" data-game="${gameName.replace(/"/g,'&quot;')}" data-date="${ds}" onclick="memoEditCell(this)">
         <div class="memo-cell-date">${label}</div>
-        <div class="memo-cell-add"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>메모</div>
+        <div class="memo-cell-add"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>${_tl('메모','Memo')}</div>
       </div>`;
     }
   });
@@ -2564,11 +2565,11 @@ function memoEditCell(cell){
   cell.classList.add('editing');
   cell.innerHTML = `
     <div class="memo-cell-date">${date.slice(5).replace('-','/')}</div>
-    <textarea class="memo-edit-area" rows="2" placeholder="메모 입력…">${currentText}</textarea>
+    <textarea class="memo-edit-area" rows="2" placeholder="${_tl('메모 입력…','Enter memo…')}">${currentText}</textarea>
     <div class="memo-edit-actions">
-      ${currentText?`<button class="memo-edit-del" onclick="memoDelete(this)">삭제</button>`:''}
-      <button class="memo-edit-cancel" onclick="memoCancelEdit(this)">취소</button>
-      <button class="memo-edit-save" onclick="memoSave(this)">저장</button>
+      ${currentText?`<button class="memo-edit-del" onclick="memoDelete(this)">${_tl('삭제','Delete')}</button>`:''}
+      <button class="memo-edit-cancel" onclick="memoCancelEdit(this)">${_tl('취소','Cancel')}</button>
+      <button class="memo-edit-save" onclick="memoSave(this)">${_tl('저장','Save')}</button>
     </div>`;
   const ta = cell.querySelector('.memo-edit-area');
   ta.focus();
@@ -2588,7 +2589,7 @@ async function memoSave(btn){
   if(text){
     const label=date.slice(5).replace('-','/');
     _NOTIF_DATA.unshift({id:`slotmemo_${gameName}_${date}_${Date.now()}`,type:'status',game:gameName,
-      badge:{text:'슬롯 메모',cls:'blue'},sub:`${label} 슬롯 메모가 추가됐어요`,detectedAt:Date.now(),read:false});
+      badge:{text:_tl('슬롯 메모','Slot Memo'),cls:'blue'},sub:_tl(`${label} 슬롯 메모가 추가됐어요`,`Slot memo added for ${label}`),detectedAt:Date.now(),read:false});
     _nSave(_NOTIF_DATA);
     _notifRefreshBadge();
   }
@@ -2663,31 +2664,31 @@ async function loadGameIssuesList(){
   const other=schedule.filter(e=>e.computed_status!=='testing').sort(_byStart);
   let sideHtml='';
   if(testing.length>0){
-    sideHtml+='<div class="gi-list-hd" style="color:var(--green);display:flex;align-items:center;gap:5px"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#10b981"/></svg> 테스트 중</div>';
+    sideHtml+=`<div class="gi-list-hd" style="color:var(--green);display:flex;align-items:center;gap:5px"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#10b981"/></svg> ${_tl('테스트 중','Testing')}</div>`;
     testing.forEach(e=>{
       const name=e.game_name.replace('SB_','');
       const isSB=e.game_name.startsWith('SB_')||e.type==='Super Bonus'||e.type==='SB';
       const safeKey=_giSafeKey(e.game_name);
-      sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(79,142,247,.12);color:#3b7ee8">테스트중</span></div>`;
+      sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(79,142,247,.12);color:#3b7ee8">${_tl('테스트중','Testing')}</span></div>`;
     });
   }
   if(other.length>0){
-    sideHtml+='<div class="gi-list-hd" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="2.5" width="12" height="10" rx="2"/><path d="M1 5.5h12M4.5 1v3M9.5 1v3"/></svg> 등록된 일정</div>';
+    sideHtml+=`<div class="gi-list-hd" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="2.5" width="12" height="10" rx="2"/><path d="M1 5.5h12M4.5 1v3M9.5 1v3"/></svg> ${_tl('등록된 일정','Scheduled')}</div>`;
     other.forEach(e=>{
       const name=e.game_name.replace('SB_','');
       const isSB=e.game_name.startsWith('SB_')||e.type==='Super Bonus'||e.type==='SB';
       const cls=_STATUS_CLS[e.computed_status||'pending']||'ev-plan';
-      const lbl=_STATUS_LBL[e.computed_status||'pending']||'예정';
+      const lbl=_statusLbl(e.computed_status||'pending');
       sideHtml+=`<div class="gi-game-item"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span class="cal-event ${cls}" style="white-space:nowrap;font-size:9px">${lbl}</span></div>`;
     });
   }
-  if(!sideHtml) sideHtml='<div style="padding:16px 10px;text-align:center;font-size:11px;color:var(--t3)">등록된 게임이 없습니다</div>';
-  listEl.innerHTML='<div class="gi-list-hd">게임 목록</div>'+sideHtml;
+  if(!sideHtml) sideHtml=`<div style="padding:16px 10px;text-align:center;font-size:11px;color:var(--t3)">${_tl('등록된 게임이 없습니다','No games registered')}</div>`;
+  listEl.innerHTML=`<div class="gi-list-hd">${_tl('게임 목록','Game List')}</div>`+sideHtml;
 
   // 우측: 테스트중 첫 번째 게임만 초기 렌더
   chartsEl.innerHTML='';
   if(testing.length===0){
-    chartsEl.innerHTML='<div class="card gi-chart-card"><div style="padding:40px 20px;text-align:center;color:var(--t3);font-size:12px">현재 테스트 중인 게임이 없습니다</div></div>';
+    chartsEl.innerHTML=`<div class="card gi-chart-card"><div style="padding:40px 20px;text-align:center;color:var(--t3);font-size:12px">${_tl('현재 테스트 중인 게임이 없습니다','No games currently in testing')}</div></div>`;
     return;
   }
   const firstEntry=testing[0];
@@ -2740,10 +2741,10 @@ function _giUpdateAddHint(){
       existing=document.createElement('div');
       existing.id='gi-add-hint';
       existing.className='gi-add-hint';
-      existing.innerHTML=`<div class="gi-add-hint-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg></div><span class="gi-add-hint-text">목록에서 게임을 선택하면 여기에 추가돼요</span>`;
     } else {
       existing.remove(); // 현재 위치에서 제거 후 맨 끝으로 재배치
     }
+    existing.innerHTML=`<div class="gi-add-hint-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg></div><span class="gi-add-hint-text">${_tl('목록에서 게임을 선택하면 여기에 추가돼요','Select a game from the list to add it here')}</span>`;
     chartsEl.appendChild(existing); // 항상 맨 끝에 배치
   } else {
     if(existing) existing.remove();
@@ -2764,14 +2765,14 @@ async function _giRenderCard(entry){
     <div style="width:1px;height:14px;background:var(--bd);margin:0 2px;flex-shrink:0"></div>
     <span style="display:flex;align-items:center;gap:3px">
       <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#94a3b8" stroke-width="1.4" style="flex-shrink:0"><rect x="1" y="2.5" width="12" height="10" rx="2"/><path d="M1 5.5h12M4.5 1v3M9.5 1v3"/></svg>
-      <span style="font-size:9px;color:var(--t3)">QA 기간</span>
+      <span style="font-size:9px;color:var(--t3)">${_tl('QA 기간','QA Period')}</span>
       <span style="font-size:11px;font-weight:600;color:var(--t2)">${_fmtD(entry.qa_start)} – ${_fmtD(entry.qa_end)}</span>
     </span>`:'';
   chartsEl.insertAdjacentHTML('beforeend',`
     <div class="card gi-chart-card" id="gi-card-${safeKey}">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)">
         <span style="font-size:15px;font-weight:800;color:var(--t1)">${displayName}${sbTag}</span>${qaRange}
-        <span style="margin-left:auto;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(79,142,247,.12);color:#3b7ee8">테스트중</span>
+        <span style="margin-left:auto;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(79,142,247,.12);color:#3b7ee8">${_tl('테스트중','Testing')}</span>
       </div>
       <div id="gi-chart-${safeKey}" style="margin-bottom:12px"></div>
       <div id="gi-body-${safeKey}" style="padding:12px 0 4px;text-align:center;color:var(--t3);font-size:12px">Jira 검색 중…</div>
@@ -2807,11 +2808,11 @@ async function _giRenderCard(entry){
       }
       function stBadge(st){
         const cat=stCategory(st);
-        if(cat==='완료')return'<span class="ist ist-dn">완료</span>';
-        if(cat==='검토중')return'<span class="ist ist-rv">검토중</span>';
-        if(cat==='진행중')return'<span class="ist ist-ip">진행중</span>';
-        if(cat==='리오픈')return`<span class="ist" style="background:var(--redbg);color:var(--red);border:1px solid var(--redbd)">리오픈</span>`;
-        return'<span class="ist ist-td">미해결</span>';
+        if(cat==='완료')return`<span class="ist ist-dn" style="white-space:nowrap">${_tl('완료','Done')}</span>`;
+        if(cat==='검토중')return`<span class="ist ist-rv" style="white-space:nowrap">${_tl('검토중','In Review')}</span>`;
+        if(cat==='진행중')return`<span class="ist ist-ip" style="white-space:nowrap">${_tl('진행중','In Progress')}</span>`;
+        if(cat==='리오픈')return`<span class="ist" style="background:var(--redbg);color:var(--red);border:1px solid var(--redbd)">${_tl('리오픈','Reopened')}</span>`;
+        return`<span class="ist ist-td" style="white-space:nowrap">${_tl('미해결','Open')}</span>`;
       }
       const sevCount={Critical:0,Major:0,Minor:0};
       const stCount={'미해결':0,'진행중':0,'검토중':0,'리오픈':0,'완료':0};
@@ -2825,12 +2826,12 @@ async function _giRenderCard(entry){
         <span style="font-size:11px;font-weight:700;color:var(--amber)">● Major <strong>${sevCount.Major}</strong></span>
         <span style="font-size:11px;font-weight:700;color:var(--t3)">● Minor <strong>${sevCount.Minor}</strong></span>
         <span style="color:var(--bd);font-size:12px;margin:0 1px">|</span>
-        <span style="font-size:11px;color:var(--t2)">미해결 <strong style="color:var(--t1)">${stCount['미해결']}</strong></span>
-        <span style="font-size:11px;color:var(--t2)">진행중 <strong style="color:var(--acc)">${stCount['진행중']}</strong></span>
-        <span style="font-size:11px;color:var(--t2)">검토중 <strong style="color:var(--amber)">${stCount['검토중']}</strong></span>
-        <span style="font-size:11px;color:var(--t2)">리오픈 <strong style="color:var(--red)">${stCount['리오픈']}</strong></span>
-        <span style="font-size:11px;color:var(--t2)">완료 <strong style="color:var(--green)">${stCount['완료']}</strong></span>
-        <span style="margin-left:auto;font-size:11px;color:var(--t3)">총 <strong style="color:var(--t1)">${bugs.length}건</strong></span>
+        <span style="font-size:11px;color:var(--t2)">${_tl('미해결','Open')} <strong style="color:var(--t1)">${stCount['미해결']}</strong></span>
+        <span style="font-size:11px;color:var(--t2)">${_tl('진행중','In Progress')} <strong style="color:var(--acc)">${stCount['진행중']}</strong></span>
+        <span style="font-size:11px;color:var(--t2)">${_tl('검토중','In Review')} <strong style="color:var(--amber)">${stCount['검토중']}</strong></span>
+        <span style="font-size:11px;color:var(--t2)">${_tl('리오픈','Reopened')} <strong style="color:var(--red)">${stCount['리오픈']}</strong></span>
+        <span style="font-size:11px;color:var(--t2)">${_tl('완료','Done')} <strong style="color:var(--green)">${stCount['완료']}</strong></span>
+        <span style="margin-left:auto;font-size:11px;color:var(--t3)">${_tl('총','Total')} <strong style="color:var(--t1)">${bugs.length}${_tl('건','')}</strong></span>
       </div>`;
       let rows='';
       bugs.forEach(i=>{
@@ -2845,8 +2846,8 @@ async function _giRenderCard(entry){
       const bodyEl=document.getElementById('gi-body-'+safeKey);
       if(bodyEl){
         bodyEl.innerHTML=summaryBar+(bugs.length===0
-          ?'<div style="padding:16px;text-align:center;color:var(--t3);font-size:12px">등록된 버그 이슈가 없습니다</div>'
-          :`<div style="overflow-x:auto"><table class="issue-tbl"><thead><tr><th style="width:70px">심각도</th><th style="width:80px">키</th><th>제목</th><th style="width:80px">상태</th><th style="width:110px">담당자</th><th style="width:60px">등록일</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+          ?`<div style="padding:16px;text-align:center;color:var(--t3);font-size:12px">${_tl('등록된 버그 이슈가 없습니다','No bug issues registered')}</div>`
+          :`<div style="overflow-x:auto"><table class="issue-tbl"><thead><tr><th style="width:70px">${_tl('심각도','Severity')}</th><th style="width:80px">${_tl('키','Key')}</th><th>${_tl('제목','Title')}</th><th style="width:80px">${_tl('상태','Status')}</th><th style="width:110px">${_tl('담당자','Assignee')}</th><th style="width:60px">${_tl('등록일','Created')}</th></tr></thead><tbody>${rows}</tbody></table></div>`);
       }
       _renderBugChartFor(safeKey);
   }catch(e){
@@ -2902,7 +2903,7 @@ async function renderDashboardTcCard(){
   const footerEl=document.getElementById('dash-tc-footer');
 
   if(active.length===0){
-    rowsEl.innerHTML='<div style="padding:24px 20px;text-align:center;font-size:12px;color:var(--t3)">현재 테스트 중인 게임이 없습니다. 스케줄 페이지에서 일정을 등록해주세요.</div>';
+    rowsEl.innerHTML=`<div style="padding:24px 20px;text-align:center;font-size:12px;color:var(--t3)">${_tl('현재 테스트 중인 게임이 없습니다. 스케줄 페이지에서 일정을 등록해주세요.','No games currently in testing. Add a schedule on the Schedule page.')}</div>`;
     footerEl.innerHTML='';
     return;
   }
@@ -2913,13 +2914,13 @@ async function renderDashboardTcCard(){
     const displayName=entry.game_name.replace('SB_','');
     const ini=(entry.assignee||'?').split(/[\/,\s]+/).filter(Boolean).map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';
     const days=_daysUntil(entry.qa_end);
-    const dueStr=days===null?'':(days<0?`마감 D+${Math.abs(days)}`:`마감 D-${days}`);
+    const dueStr=days===null?'':(days<0?`${_tl('마감','Due')} D+${Math.abs(days)}`:`${_tl('마감','Due')} D-${days}`);
     const dueColor=(days!==null&&days<=3)?'var(--red)':'var(--t3)';
     const dueFw=(days!==null&&days<=3)?'700':'600';
     const _isExt=entry.computed_status==='extended';
     const _todayStr=new Date().toISOString().slice(0,10);
     const _phaseIsTc=entry.computed_status==='tc'||(_isExt&&entry.tc_end&&_todayStr<=entry.tc_end);
-    const statusLabel=_phaseIsTc?'TC 작성중':'테스트 중';
+    const statusLabel=_phaseIsTc?_tl('TC 작성중','Writing TC'):_tl('테스트 중','Testing');
     const statusColor=_phaseIsTc?'#6b4fe0':'var(--acc)';
     const statusBg=_phaseIsTc?'rgba(124,90,247,.1)':'var(--accbg)';
     const extBadge=_isExt?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#fff7ed;color:#ea580c">연장</span>`:'';
@@ -2929,12 +2930,12 @@ async function renderDashboardTcCard(){
     const safeId=entry.id.replace(/'/g,"\\'");
     const tcLeft=hasSheet?(isSB?`
       ${_tcBarRow('Super Bonus','var(--acc)',prefix,'super_bonus')}
-      <div style="margin-top:9px;font-size:11px;color:var(--t3)">전체 <strong id="tc-${prefix}-total" style="color:var(--t1)">—</strong> · 잔여 <span id="tc-${prefix}-remain">—</span>건</div>`
+      <div style="margin-top:9px;font-size:11px;color:var(--t3)">${_tl('전체','Total')} <strong id="tc-${prefix}-total" style="color:var(--t1)">—</strong> · ${_tl('잔여','Remaining')} <span id="tc-${prefix}-remain">—</span>${_tl('건','')}</div>`
       :`
       ${_tcBarRow('Basic','var(--acc)',prefix,'basic')}
       ${_tcBarRow('Content','var(--acc2)',prefix,'content')}
-      <div style="margin-top:9px;font-size:11px;color:var(--t3)">전체 <strong id="tc-${prefix}-total" style="color:var(--t1)">—</strong> · 잔여 <span id="tc-${prefix}-remain">—</span>건</div>`)
-      :`<div style="margin-top:8px;font-size:11px;color:var(--t3)">TC 데이터 없음</div>`;
+      <div style="margin-top:9px;font-size:11px;color:var(--t3)">${_tl('전체','Total')} <strong id="tc-${prefix}-total" style="color:var(--t1)">—</strong> · ${_tl('잔여','Remaining')} <span id="tc-${prefix}-remain">—</span>${_tl('건','')}</div>`)
+      :`<div style="margin-top:8px;font-size:11px;color:var(--t3)">${_tl('TC 데이터 없음','No TC data')}</div>`;
     const sbBadge=isSB?'<span style="color:var(--t3);font-weight:400;font-size:12px">(SB)</span>':'';
     const safeGameName=entry.game_name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const safeSheetId=(entry.qa_sheet_id||'').replace(/'/g,"\\'");
@@ -3025,29 +3026,30 @@ async function renderDashboardTcCard(){
   const hold=_schedData.filter(e=>e.computed_status==='hold');
   const late=_schedData.filter(e=>e.computed_status==='needs_action');
   const pending=_schedData.filter(e=>e.computed_status==='pending');
-  let ftHtml='<span style="font-size:11px;color:var(--t3);font-weight:600">미표시</span>';
+  let ftHtml=`<span style="font-size:11px;color:var(--t3);font-weight:600">${_tl('미표시','Not shown')}</span>`;
   done.forEach(e=>{
     const nm=e.game_name.replace('SB_','');
     ftHtml+=`<span class="tc-done-chip" onclick="openSchedModal('${e.id}')">✓ ${nm} (${e.qa_end?e.qa_end.slice(5).replace('-','/'):''})</span>`;
   });
   hold.forEach(e=>{
     const nm=e.game_name.replace('SB_','');
-    ftHtml+=`<span class="tc-wait-chip" style="border-color:var(--amberbd);color:var(--amber);background:var(--amberbg);cursor:pointer" onclick="openSchedModal('${e.id}')">🟡 ${nm} 홀드</span>`;
+    ftHtml+=`<span class="tc-wait-chip" style="border-color:var(--amberbd);color:var(--amber);background:var(--amberbg);cursor:pointer" onclick="openSchedModal('${e.id}')">🟡 ${nm} ${_tl('홀드','On Hold')}</span>`;
   });
 late.forEach(e=>{
     const nm=e.game_name.replace('SB_','');
-    ftHtml+=`<span class="tc-wait-chip" style="border-color:var(--redbd);color:var(--red);background:var(--redbg);cursor:pointer" onclick="openSchedModal('${e.id}')">⚠ ${nm} 지연</span>`;
+    ftHtml+=`<span class="tc-wait-chip" style="border-color:var(--redbd);color:var(--red);background:var(--redbg);cursor:pointer" onclick="openSchedModal('${e.id}')">⚠ ${nm} ${_tl('지연','Delayed')}</span>`;
   });
   if(pending.length>0){
     const names=pending.map(e=>e.game_name.replace('SB_','')).join(' · ');
-    ftHtml+=`<span class="tc-wait-chip">${names} (QA 예정)</span>`;
+    ftHtml+=`<span class="tc-wait-chip">${names} (${_tl('QA 예정','QA Planned')})</span>`;
   }
   if(done.length+hold.length+late.length+pending.length===0)ftHtml='';
   footerEl.innerHTML=ftHtml;
 }
 
 // ── 최근 이슈 요약 (이번 주 버그) ──────────────────────────
-(function loadWeeklyBugs(){
+let _weeklyBugsData=null;
+function _renderWeeklyBugs(data){
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function sevBadge(sev){
     if(sev==='c') return`<span class="sev-pill sev-c">Critical</span>`;
@@ -3060,35 +3062,36 @@ late.forEach(e=>{
     if(isNaN(dt)) return String(d).slice(5,10).replace('-','/');
     return(dt.getMonth()+1)+'/'+dt.getDate();
   }
+  const summary=document.getElementById('weekly-bugs-summary');
+  if(summary){
+    summary.innerHTML=`${_tl('오픈','Open')} <strong style="color:var(--red)">${data.open}${_tl('건','')}</strong> · ${_tl('해결됨','Resolved')} <strong style="color:var(--green)">${data.resolved}${_tl('건','')}</strong> · ${_tl('전체','Total')} <strong style="color:var(--t1)">${data.total}${_tl('건','')}</strong>`;
+  }
+  const list=document.getElementById('weekly-bugs-list');
+  if(!list) return;
+  const issues=data.issues||[];
+  if(!issues.length){
+    list.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">${_tl('이번 주 등록된 버그 티켓이 없습니다.','No bug tickets registered this week.')}</td></tr>`;
+    return;
+  }
+  list.innerHTML=issues.map(r=>`<tr class="issue-row" onclick="window.open('${esc(r.url)}','_blank')">
+    <td>${sevBadge(r.sev)}</td>
+    <td><span style="font-size:11px;font-weight:600;color:var(--acc)">${esc(r.key)}</span></td>
+    <td>
+      <div style="font-size:12px;color:var(--t1);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.summary)}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:1px">${esc(r.game||'')}${r.is_sb?' (SB)':''}</div>
+    </td>
+    <td>${_liStBadge(r.status)}</td>
+    <td><span style="font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:120px">${esc(r.assignee||'—')}</span></td>
+    <td><span style="font-size:11px;color:var(--t3);white-space:nowrap">${fmtDate(r.created)}</span></td>
+  </tr>`).join('');
+}
+(function loadWeeklyBugs(){
   fetch('/api/weekly_bugs')
     .then(r=>r.json())
-    .then(data=>{
-      const summary=document.getElementById('weekly-bugs-summary');
-      if(summary){
-        summary.innerHTML=`오픈 <strong style="color:var(--red)">${data.open}건</strong> · 해결됨 <strong style="color:var(--green)">${data.resolved}건</strong> · 전체 <strong style="color:var(--t1)">${data.total}건</strong>`;
-      }
-      const list=document.getElementById('weekly-bugs-list');
-      if(!list) return;
-      const issues=data.issues||[];
-      if(!issues.length){
-        list.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">이번 주 등록된 버그 티켓이 없습니다.</td></tr>';
-        return;
-      }
-      list.innerHTML=issues.map(r=>`<tr class="issue-row" onclick="window.open('${esc(r.url)}','_blank')">
-        <td>${sevBadge(r.sev)}</td>
-        <td><span style="font-size:11px;font-weight:600;color:var(--acc)">${esc(r.key)}</span></td>
-        <td>
-          <div style="font-size:12px;color:var(--t1);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px">${esc(r.summary)}</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:1px">${esc(r.game||'')}${r.is_sb?' (SB)':''}</div>
-        </td>
-        <td>${_liStBadge(r.status)}</td>
-        <td><span style="font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:120px">${esc(r.assignee||'—')}</span></td>
-        <td><span style="font-size:11px;color:var(--t3);white-space:nowrap">${fmtDate(r.created)}</span></td>
-      </tr>`).join('');
-    })
+    .then(data=>{_weeklyBugsData=data;_renderWeeklyBugs(data);})
     .catch(()=>{
       const list=document.getElementById('weekly-bugs-list');
-      if(list) list.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">데이터를 불러올 수 없습니다.</td></tr>';
+      if(list) list.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">${_tl('데이터를 불러올 수 없습니다.','Failed to load data.')}</td></tr>`;
     });
 })();
 
@@ -3107,21 +3110,21 @@ late.forEach(e=>{
     .then(r=>r.json())
     .then(d=>{
       if(d.loading&&!d.ready){
-        el.innerHTML='캐시 로딩 중… <span style="color:var(--acc)">●</span>';
+        el.innerHTML=`${_tl('캐시 로딩 중…','Loading cache…')} <span style="color:var(--acc)">●</span>`;
         setTimeout(loadCacheStat,3000);
       } else if(!d.loading&&!d.ready){
-        el.innerHTML='<span style="color:var(--red)">⚠ 캐시 로드 실패 — Jira/Confluence 연결을 확인해 주세요</span>';
+        el.innerHTML=`<span style="color:var(--red)">⚠ ${_tl('캐시 로드 실패 — Jira/Confluence 연결을 확인해 주세요','Cache load failed — check Jira/Confluence connection')}</span>`;
       } else if(d.ready){
         const errParts=[];
         if(d.jira_error) errParts.push('Jira');
         if(d.confluence_error) errParts.push('Confluence');
         if(d.mcp_error) errParts.push('Drive');
-        let stat=`Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}건</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}건</strong> 로드됨`;
-        if(errParts.length) stat+=` <span style="color:var(--red);font-size:11px">⚠ ${errParts.join('/')} 연결 오류</span>`;
+        let stat=`Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}${_tl('건','')}</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}${_tl('건','')}</strong> ${_tl('로드됨','loaded')}`;
+        if(errParts.length) stat+=` <span style="color:var(--red);font-size:11px">⚠ ${errParts.join('/')} ${_tl('연결 오류','connection error')}</span>`;
         el.innerHTML=stat;
       }
     })
-    .catch(()=>{el.textContent='서버 연결 오류';});
+    .catch(()=>{el.textContent=_tl('서버 연결 오류','Server error');});
 })();
 
 // ── Notifications ──
@@ -3137,12 +3140,12 @@ function _relTime(ts){
   // ts는 서버에서 unix seconds로 저장됨
   const ms=ts>1e10?ts:ts*1000;
   const m=Math.floor((Date.now()-ms)/60000);
-  if(m<1)return'방금 전';
-  if(m<60)return`${m}분 전`;
+  if(m<1)return _tl('방금 전','Just now');
+  if(m<60)return _tl(`${m}분 전`,`${m}m ago`);
   const h=Math.floor(m/60);
-  if(h<24)return`${h}시간 전`;
-  if(h<48)return'어제';
-  return`${Math.floor(h/24)}일 전`;
+  if(h<24)return _tl(`${h}시간 전`,`${h}h ago`);
+  if(h<48)return _tl('어제','Yesterday');
+  return _tl(`${Math.floor(h/24)}일 전`,`${Math.floor(h/24)}d ago`);
 }
 
 // qa_end 기준 영업일 전날 반환 (주말 건너뜀)
@@ -3185,7 +3188,7 @@ function _notifRenderDrop(){
   if(!list)return;
   const items=_notifFiltered(_notifTab).slice(0,4);
   list.innerHTML=items.length?items.map(_notifItemHtml).join('')
-    :'<div style="padding:20px 14px;text-align:center;font-size:12px;color:var(--t3)">알림이 없어요</div>';
+    :`<div style="padding:20px 14px;text-align:center;font-size:12px;color:var(--t3)">${_tl('알림이 없어요','No notifications')}</div>`;
 }
 
 function _notifRenderSb(){
@@ -3647,40 +3650,6 @@ function _tourCloseSchedDemo(){
   }catch(e){}
 })();
 
-// ── 프로필 ────────────────────────────────────────────────
-(function initProfile(){
-  const ROLE_KEY = 'qa_role_v1';
-  const saved = localStorage.getItem(ROLE_KEY);
-  if(saved) document.getElementById('sb-urole').textContent = saved;
-
-  fetch('/api/me').then(r=>r.json()).then(d=>{
-    document.getElementById('sb-uname').textContent = d.name || 'unknown';
-    document.getElementById('sb-av').textContent = d.initials || '?';
-  }).catch(()=>{});
-
-  document.getElementById('sb-user-card').addEventListener('click', function(){
-    document.getElementById('profile-role-inp').value = localStorage.getItem(ROLE_KEY) || '';
-    const m = document.getElementById('profile-modal');
-    m.style.display = 'flex';
-    document.getElementById('profile-role-inp').focus();
-  });
-
-  window.saveRole = function(){
-    const role = document.getElementById('profile-role-inp').value.trim();
-    if(!role) return;
-    localStorage.setItem(ROLE_KEY, role);
-    document.getElementById('sb-urole').textContent = role;
-    document.getElementById('profile-modal').style.display = 'none';
-  };
-
-  document.getElementById('profile-modal').addEventListener('click', function(e){
-    if(e.target === this) this.style.display = 'none';
-  });
-
-  document.getElementById('profile-role-inp').addEventListener('keydown', function(e){
-    if(e.key === 'Enter') saveRole();
-  });
-})();
 </script>
 <!-- Notification overlay + sidebar -->
 <!-- ── Tutorial DOM ── -->
@@ -3695,19 +3664,182 @@ function _tourCloseSchedDemo(){
 <div class="notif-overlay" id="notif-overlay" onclick="notifCloseSidebar()"></div>
 <div class="notif-sidebar" id="notif-sidebar">
   <div class="notif-sb-hd">
-    <span class="notif-sb-title">알림 <span id="notif-sb-cnt" style="font-size:12px;font-weight:600;color:#ef4444"></span></span>
+    <span class="notif-sb-title"><span data-i18n="notif.title" data-i18n-ko="알림">알림</span> <span id="notif-sb-cnt" style="font-size:12px;font-weight:600;color:#ef4444"></span></span>
     <div class="notif-sb-actions">
-      <span class="notif-sb-readall" onclick="notifReadAll()">모두 읽음</span>
+      <span class="notif-sb-readall" onclick="notifReadAll()" data-i18n="notif.readAll" data-i18n-ko="모두 읽음">모두 읽음</span>
       <div class="notif-sb-close" onclick="notifCloseSidebar()">✕</div>
     </div>
   </div>
   <div class="notif-sb-tabs">
-    <div class="notif-tab" data-stab="all" onclick="notifSetSidebarTab('all',this)">전체</div>
-    <div class="notif-tab off" data-stab="bug" onclick="notifSetSidebarTab('bug',this)">버그</div>
-    <div class="notif-tab off" data-stab="schedule" onclick="notifSetSidebarTab('schedule',this)">일정</div>
-    <div class="notif-tab off" data-stab="status" onclick="notifSetSidebarTab('status',this)">상태</div>
+    <div class="notif-tab" data-stab="all" onclick="notifSetSidebarTab('all',this)" data-i18n="notif.all" data-i18n-ko="전체">전체</div>
+    <div class="notif-tab off" data-stab="bug" onclick="notifSetSidebarTab('bug',this)" data-i18n="notif.bug" data-i18n-ko="버그">버그</div>
+    <div class="notif-tab off" data-stab="schedule" onclick="notifSetSidebarTab('schedule',this)" data-i18n="notif.schedule" data-i18n-ko="일정">일정</div>
+    <div class="notif-tab off" data-stab="status" onclick="notifSetSidebarTab('status',this)" data-i18n="notif.status" data-i18n-ko="상태">상태</div>
   </div>
   <div class="notif-sb-body" id="notif-sb-list"></div>
 </div>
+
+<script>
+// ── i18n ──────────────────────────────────────────────────────
+const I18N = {
+  'notif.title':'Notifications','notif.readAll':'Mark all as read',
+  'notif.all':'All','notif.bug':'Bug','notif.schedule':'Schedule','notif.status':'Status',
+  'notif.viewAll':'View all','notif.empty':'No notifications',
+  'nav.main':'Main','nav.dashboard':'Dashboard','nav.slot-issues':'Slot Issues',
+  'nav.live-issues':'Live Issues','nav.schedule':'Schedule','nav.quick-links':'Quick Links',
+  'nav.ctd-sheet':'CTD Sheet','nav.jira-board':'Jira Board','nav.admin':'Admin',
+  'dash.tc.header':'Test Progress','dash.tc.col':'TC Progress','dash.issue.col':'Issue Status',
+  'dash.recent.header':'Recent Issues','dash.recent.badge':'This week',
+  'dash.timeline.header':'Slot Schedule Timeline','dash.viewAll':'View all →',
+  'dash.game':'Game','dash.assignedQA':'Assigned QA',
+  'dash.cacheLoading':'Loading cache…','dash.loading':'Loading…',
+  'tbl.severity':'Severity','tbl.key':'Key','tbl.title':'Title',
+  'tbl.status':'Status','tbl.assignee':'Assignee','tbl.created':'Created',
+  'sr.back':'Back','sr.all':'All','sr.bugOnly':'⚠ Bugs only',
+  'ai.welcome':'Ask me anything about games, issues, or documents 😊',
+  'ai.welcomeSub':'Ask questions based on Jira &amp; Confluence data.<br>Help with issue pattern analysis, history lookup, and statistical summaries.',
+  'ai.sug1':'Issues this week','ai.sug2':'Critical issue list','ai.sug3':'Find game info',
+  'ai.clear':'Clear chat',
+  'sched.addSchedule':'+ Add Schedule','sched.addEvent':'+ Add Event',
+  'sched.month':'Month','sched.week':'Week',
+  'live.totalIssues':'Total Issues','live.vsPrev':'vs prev year:',
+  'live.monthlyTrend':'Monthly Issue Trend',
+  'live.compareOff':'Prev Year OFF','live.compareOn':'Prev Year ON',
+  'live.issueList':'Issue List',
+  'gi.gameList':'Game List',
+  'ev.addTitle':'Add Event','ev.editTitle':'Edit Event',
+  'ev.name':'Event Name','ev.start':'Start Date','ev.end':'End Date',
+  'ev.delete':'Delete','ev.cancel':'Cancel','ev.save':'Save',
+  'sm.addTitle':'Add QA Schedule','sm.editTitle':'Edit QA Schedule',
+  'sm.gameTitle':'Game Title','sm.qaStart':'QA Start Date','sm.qaEnd':'QA Due Date',
+  'sm.tcEnd':'TC Completion Date','sm.optional':'(Optional)',
+  'sm.assignee':'Assignee','sm.memo':'Memo','sm.memoOpt':'(Optional — reason for extension, etc.)',
+  'sm.statusChange':'Change Status',
+  'sm.active':'Active','sm.hold':'On Hold','sm.extended':'Extended','sm.done':'Done',
+  'sm.delete':'Delete','sm.cancel':'Cancel','sm.save':'Save',
+  'ph.search':'Search — game name, issue number, feature name…',
+  'ph.gameSearch':'Search game…','ph.schedMemo':'e.g. Schedule extended due to company event',
+  'ph.evTitle':'e.g. All-hands Workshop',
+};
+
+let _lang = localStorage.getItem('qa_lang') || 'ko';
+
+function setLang(lang){
+  _lang = lang;
+  localStorage.setItem('qa_lang', lang);
+  const isEn = lang === 'en';
+
+  // toggle UI
+  const koBtn = document.getElementById('lang-ko'), enBtn = document.getElementById('lang-en');
+  if(koBtn && enBtn){
+    koBtn.style.background = isEn ? '' : '#fff';
+    koBtn.style.color = isEn ? 'var(--t3)' : 'var(--acc)';
+    koBtn.style.boxShadow = isEn ? '' : '0 1px 3px rgba(0,0,0,.08)';
+    enBtn.style.background = isEn ? '#fff' : '';
+    enBtn.style.color = isEn ? 'var(--acc)' : 'var(--t3)';
+    enBtn.style.boxShadow = isEn ? '0 1px 3px rgba(0,0,0,.08)' : '';
+  }
+
+  // data-i18n text elements
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(isEn){ if(I18N[key]) el.textContent = I18N[key]; }
+    else { const ko = el.getAttribute('data-i18n-ko'); if(ko) el.textContent = ko; }
+  });
+
+  // data-i18n-html elements
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-html');
+    if(isEn){ if(I18N[key]) el.innerHTML = I18N[key]; }
+    else { const ko = el.getAttribute('data-i18n-html-ko'); if(ko) el.innerHTML = ko; }
+  });
+
+  // placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-placeholder');
+    if(isEn){ if(I18N[key]) el.placeholder = I18N[key]; }
+    else { const ko = el.getAttribute('data-i18n-placeholder-ko'); if(ko) el.placeholder = ko; }
+  });
+
+  // PAGES object
+  const pagesMap = isEn ? {
+    'dashboard':  {title:'Dashboard',    sub:"This week's QA status at a glance"},
+    'schedule':   {title:'Schedule',     sub:'QA schedule and game release timeline'},
+    'live-issues':{title:'Live Issues',  sub:'Tracking all currently active issues'},
+    'game-issues':{title:'Slot Issues',  sub:'Issue trends and severity analysis by game'},
+    'hub-ai':     {title:'Hub AI',       sub:'QA assistant based on Jira & Confluence data'},
+    'search-results':{title:'Search Results',sub:''},
+  } : {
+    'dashboard':  {title:'대시보드',   sub:'이번 주 QA 현황을 한눈에 확인하세요'},
+    'schedule':   {title:'스케줄',     sub:'QA 일정 및 게임 릴리즈 타임라인'},
+    'live-issues':{title:'라이브 이슈',sub:'현재 진행 중인 전체 이슈 트래킹'},
+    'game-issues':{title:'슬롯별 이슈',sub:'게임별 이슈 추이 및 등급 분석'},
+    'hub-ai':     {title:'Hub AI',     sub:'Jira · Confluence 데이터 기반 QA 어시스턴트'},
+    'search-results':{title:'검색 결과',sub:''},
+  };
+  if(typeof PAGES !== 'undefined') Object.assign(PAGES, pagesMap);
+  const activePage = document.querySelector('.page.active');
+  if(activePage){
+    const pk = activePage.id.replace('page-','');
+    if(pagesMap[pk]){
+      const t = document.getElementById('page-title'), s = document.getElementById('page-sub');
+      if(t && pagesMap[pk].title) t.textContent = pagesMap[pk].title;
+      if(s) s.textContent = pagesMap[pk].sub;
+    }
+  }
+
+  // month select options
+  const moSel = document.getElementById('issue-mo');
+  if(moSel){
+    const months = isEn
+      ? ['All','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      : ['전체','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+    [...moSel.options].forEach((o,i)=>{ o.text = months[i]; });
+  }
+  const yrSel = document.getElementById('issue-yr');
+  if(yrSel) [...yrSel.options].forEach(o=>{ o.text = isEn ? o.value : o.value+'년'; });
+
+  // compare button
+  const cmpBtn = document.getElementById('chart-compare-btn');
+  if(cmpBtn){
+    const on = cmpBtn.getAttribute('data-compare') === '1';
+    cmpBtn.textContent = isEn ? (on?'Prev Year ON':'Prev Year OFF') : (on?'전년 비교 ON':'전년 비교 OFF');
+  }
+
+  document.documentElement.lang = lang;
+
+
+  // 이미 렌더된 동적 컴포넌트 즉시 재렌더
+  if(typeof renderTimeline === 'function') renderTimeline();
+  if(typeof renderDashboardTcCard === 'function') renderDashboardTcCard();
+  if(_weeklyBugsData) _renderWeeklyBugs(_weeklyBugsData);
+
+  // 슬롯별 이슈 — 사이드바 + 펼쳐진 카드 전체 재렌더
+  if(typeof _giLoaded !== 'undefined'){
+    _giLoaded=false;
+    loadGameIssuesList();
+  }
+  if(typeof _giCardState !== 'undefined'){
+    Object.keys(_giCardState).forEach(k=>_renderBugChartFor(k));
+  }
+
+  // 달력 월 헤더
+  const _lbl=document.getElementById('sch-month-lbl');
+  if(_lbl&&typeof _schedYear!=='undefined'){
+    const _mnEn2=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    _lbl.textContent=isEn?_mnEn2[_schedMonth-1]+' '+_schedYear:_schedYear+'년 '+_schedMonth+'월';
+  }
+}
+
+// apply on load
+(function(){
+  const saved = localStorage.getItem('qa_lang') || 'ko';
+  if(saved === 'en') setLang('en');
+  else {
+    const k=document.getElementById('lang-ko'),e=document.getElementById('lang-en');
+    if(k&&e){k.style.background='#fff';k.style.color='var(--acc)';k.style.boxShadow='0 1px 3px rgba(0,0,0,.08)';e.style.background='';e.style.color='var(--t3)';e.style.boxShadow='';}
+  }
+})();
+</script>
 </body>
 </html>
