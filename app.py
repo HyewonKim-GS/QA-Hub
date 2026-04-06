@@ -1084,7 +1084,7 @@ def _autofill_sheet_id(entry: dict) -> None:
     SB 게임: GWS Drive 검색 (공유 드라이브 포함)
     일반 게임: get_game MCP → 실패 시 GWS Drive 검색 fallback
     """
-    if entry.get("qa_sheet_id"):
+    if entry.get("qa_sheet_id") or entry.get("_sheet_searched"):
         return
     game_name = entry.get("game_name", "").replace("SB_", "").strip()
     if not game_name:
@@ -1097,6 +1097,7 @@ def _autofill_sheet_id(entry: dict) -> None:
         sheet_id = _drive_search_sheet(words + ["SB"])
         if sheet_id:
             entry["qa_sheet_id"] = sheet_id
+        entry["_sheet_searched"] = True
         return
 
     # 일반 게임: MCP get_game 우선
@@ -1117,6 +1118,8 @@ def _autofill_sheet_id(entry: dict) -> None:
     sheet_id = _drive_search_sheet(words)
     if sheet_id:
         entry["qa_sheet_id"] = sheet_id
+    # 찾든 못 찾든 재검색 방지 마킹
+    entry["_sheet_searched"] = True
 
 
 @app.get("/api/schedule")
@@ -1125,15 +1128,14 @@ async def api_schedule_get():
     entries = _read_schedule()
     today = date.today()
     loop = asyncio.get_event_loop()
-    missing = [e for e in entries if not e.get("qa_sheet_id")]
+    missing = [e for e in entries if not e.get("qa_sheet_id") and not e.get("_sheet_searched")]
     if missing:
         await asyncio.gather(*[
             loop.run_in_executor(_executor, _autofill_sheet_id, e)
             for e in missing
         ])
-        # 찾은 qa_sheet_id를 schedule.json에 저장 (다음 요청부터 Drive 재검색 스킵)
-        if any(e.get("qa_sheet_id") for e in missing):
-            _write_schedule(entries)
+        # 찾든 못 찾든 _sheet_searched 마킹을 schedule.json에 저장 (Drive 재검색 방지)
+        _write_schedule(entries)
     for e in entries:
         e["computed_status"] = _compute_status(e, today)
     return JSONResponse(entries)
