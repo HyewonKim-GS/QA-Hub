@@ -19,10 +19,12 @@ cd ~/qa-search
 The app is a FastAPI server with an in-memory cache. On startup, it fetches all Jira issues and Confluence pages in parallel, caches them in RAM, and all searches run against that local cache. The cache auto-refreshes every 1 hour.
 
 ```
-app.py          — FastAPI server, cache lifecycle, API endpoints
-search.py       — Data fetching (Jira, Confluence, Drive) + local search logic
-static/index.html — Single-page UI (dark theme, no build step)
-.env            — Credentials (ATLASSIAN_DOMAIN, ATLASSIAN_EMAIL, ATLASSIAN_API_TOKEN, JIRA_PROJECT)
+app.py               — FastAPI server, cache lifecycle, API endpoints
+search.py            — Data fetching (Jira, Confluence, Drive) + local search logic
+static/hub.html      — Single-page UI (dark theme, no build step)
+static/hub.css       — UI 스타일시트
+docs/presentation.html — QA Hub 팀 소개 발표 슬라이드 (/presentation 라우트)
+.env                 — Credentials (ATLASSIAN_DOMAIN, ATLASSIAN_EMAIL, ATLASSIAN_API_TOKEN, JIRA_PROJECT, MCP_SSE_URL, REPOB_BIN)
 ```
 
 ### Cache flow

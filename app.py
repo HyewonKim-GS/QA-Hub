@@ -278,23 +278,24 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="QA Search", lifespan=lifespan)
 
 STATIC_DIR = Path(__file__).parent / "static"
+DOCS_DIR = Path(__file__).parent / "docs"
 STATIC_DIR.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return HTMLResponse((STATIC_DIR / "hub_v8.html").read_text(encoding="utf-8"))
+    return HTMLResponse((STATIC_DIR / "hub.html").read_text(encoding="utf-8"))
 
 
 @app.get("/hub", response_class=HTMLResponse)
 async def hub():
-    return HTMLResponse((STATIC_DIR / "hub_v8.html").read_text(encoding="utf-8"))
+    return HTMLResponse((STATIC_DIR / "hub.html").read_text(encoding="utf-8"))
 
 
 @app.get("/presentation", response_class=HTMLResponse)
 async def presentation():
-    return HTMLResponse((STATIC_DIR / "presentation.html").read_text(encoding="utf-8"))
+    return HTMLResponse((DOCS_DIR / "presentation.html").read_text(encoding="utf-8"))
 
 
 @app.get("/api/me")
@@ -710,7 +711,9 @@ async def api_tc_progress(sheet_id: str, game_type: str = ""):
 
 # ── SQLite DB ────────────────────────────────────────────────────────────────
 
-_DB_PATH = Path(__file__).parent / "qa.db"
+_DATA_DIR = Path(__file__).parent / "data"
+_DATA_DIR.mkdir(exist_ok=True)
+_DB_PATH = _DATA_DIR / "qa.db"
 _DB_LOCK = threading.Lock()
 
 _DB_SCHEMA = """
@@ -946,11 +949,11 @@ _MONTH_MAP = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5,
 
 
 def _events_path() -> Path:
-    return Path(__file__).parent / "events.json"
+    return _DATA_DIR / "events.json"
 
 
 def _memos_path() -> Path:
-    return Path(__file__).parent / "memos.json"
+    return _DATA_DIR / "memos.json"
 
 
 def _read_memos() -> List[dict]:
