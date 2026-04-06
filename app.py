@@ -275,6 +275,15 @@ async def presentation():
     return HTMLResponse((STATIC_DIR / "presentation.html").read_text(encoding="utf-8"))
 
 
+@app.get("/api/me")
+async def api_me():
+    from search import ATLASSIAN_EMAIL
+    name = ATLASSIAN_EMAIL.split("@")[0] if ATLASSIAN_EMAIL else "unknown"
+    parts = name.replace(".", " ").split()
+    initials = (parts[0][0] + (parts[1][0] if len(parts) > 1 else parts[0][1] if len(parts[0]) > 1 else "")).upper()
+    return JSONResponse({"name": name, "initials": initials})
+
+
 @app.get("/api/status")
 async def api_status():
     return JSONResponse({
