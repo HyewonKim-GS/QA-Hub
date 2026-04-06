@@ -1131,6 +1131,9 @@ async def api_schedule_get():
             loop.run_in_executor(_executor, _autofill_sheet_id, e)
             for e in missing
         ])
+        # 찾은 qa_sheet_id를 schedule.json에 저장 (다음 요청부터 Drive 재검색 스킵)
+        if any(e.get("qa_sheet_id") for e in missing):
+            _write_schedule(entries)
     for e in entries:
         e["computed_status"] = _compute_status(e, today)
     return JSONResponse(entries)
