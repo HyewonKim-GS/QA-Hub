@@ -117,6 +117,7 @@ def fetch_all_jira() -> List[Dict]:
 
 _PRIORITY_SEV: Dict[str, str] = {
     "주요": "c",       # Critical
+    "중요": "c",       # Critical
     "medium": "mj",    # Major
     "Medium": "mj",
     "사소": "mn",      # Minor

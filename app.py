@@ -503,6 +503,7 @@ async def api_weekly_bugs():
 
     _PRIORITY_SEV_MAP = {
         "주요": ("c", "Critical"),
+        "중요": ("c", "Critical"),
         "Highest": ("c", "Critical"),
         "highest": ("c", "Critical"),
         "High": ("mj", "Major"),
@@ -858,7 +859,7 @@ def _detect_critical_bugs(issues: List[dict]) -> None:
     """신규 Critical 버그를 DB에 추가 (캐시 갱신 시 호출)."""
     cutoff = (date.today() - timedelta(days=3)).isoformat()
     for issue in issues:
-        if issue.get("priority") not in ("주요", "Highest"):
+        if issue.get("priority") not in ("주요", "중요", "Highest"):
             continue
         if issue.get("type") != "Bug":
             continue
@@ -2944,11 +2945,11 @@ def _process_chat(message: str, history: List[dict], _return_prepared: bool = Fa
     _prio_jira: List[dict] = []
     _prio_label = ""
     _CLOSED_STATUSES = {"완료", "Done", "해결됨", "Resolved", "Closed"}
-    _CRITICAL_PRIORITIES = {"주요", "Highest", "highest", "Critical", "critical"}
+    _CRITICAL_PRIORITIES = {"주요", "중요", "Highest", "highest", "Critical", "critical"}
     _MAJOR_PRIORITIES = {"Medium", "medium"}
     try:
         _is_open_query = any(w in message for w in ["오픈", "미해결", "열린", "open", "unresolved", "현재 이슈", "현재이슈"])
-        _is_critical_query = any(w in message for w in ["크리티컬", "critical", "Critical", "주요"])
+        _is_critical_query = any(w in message for w in ["크리티컬", "critical", "Critical", "주요", "중요"])
         _is_major_query = any(w in message for w in ["메이저", "major", "Major"])
         if not game_raw and (_is_open_query or _is_critical_query or _is_major_query):
             if _is_critical_query:

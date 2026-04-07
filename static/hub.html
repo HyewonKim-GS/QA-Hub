@@ -413,7 +413,7 @@
             <option value="all">전체</option>
             <option value="1">1월</option>
             <option value="2">2월</option>
-            <option value="3" selected>3월</option>
+            <option value="3">3월</option>
             <option value="4">4월</option>
             <option value="5">5월</option>
             <option value="6">6월</option>
@@ -627,7 +627,11 @@ function showPage(key,el){
   const p=PAGES[key];
   document.getElementById('page-title').textContent=p.title;
   document.getElementById('page-sub').textContent=p.sub;
-  if(key==='live-issues') filterIssues();
+  if(key==='live-issues'){
+    const _moSel=document.getElementById('issue-mo');
+    if(_moSel && _moSel.value==='all') _moSel.value=String(new Date().getMonth()+1);
+    filterIssues();
+  }
   if(key==='schedule') initSchedulePage();
   if(key==='game-issues') loadGameIssuesList();
   if(key==='hub-ai') _chatRestoreHistory();
