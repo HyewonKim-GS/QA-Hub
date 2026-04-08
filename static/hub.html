@@ -2897,7 +2897,7 @@ async function renderDashboardTcCard(){
   const fmt=d=>(d.getMonth()+1)+'/'+d.getDate();
   document.getElementById('dash-week-badge').textContent=fmt(mon)+'–'+fmt(sun);
 
-  const active=_schedData.filter(e=>e.computed_status==='testing'||e.computed_status==='tc'||e.computed_status==='extended')
+  const active=_schedData.filter(e=>e.computed_status==='testing'||e.computed_status==='tc'||e.computed_status==='extended'||e.computed_status==='needs_action')
     .sort((a,b)=>{
       const da=a.qa_end?new Date(a.qa_end):new Date('9999-12-31');
       const db=b.qa_end?new Date(b.qa_end):new Date('9999-12-31');
@@ -2922,11 +2922,12 @@ async function renderDashboardTcCard(){
     const dueColor=(days!==null&&days<=3)?'var(--red)':'var(--t3)';
     const dueFw=(days!==null&&days<=3)?'700':'600';
     const _isExt=entry.computed_status==='extended';
+    const _isLate=entry.computed_status==='needs_action';
     const _todayStr=new Date().toISOString().slice(0,10);
     const _phaseIsTc=entry.computed_status==='tc'||(_isExt&&entry.tc_end&&_todayStr<=entry.tc_end);
-    const statusLabel=_phaseIsTc?_tl('TC 작성중','Writing TC'):_tl('테스트 중','Testing');
-    const statusColor=_phaseIsTc?'#6b4fe0':'var(--acc)';
-    const statusBg=_phaseIsTc?'rgba(124,90,247,.1)':'var(--accbg)';
+    const statusLabel=_isLate?_tl('⚠ 지연','⚠ Delayed'):(_phaseIsTc?_tl('TC 작성중','Writing TC'):_tl('테스트 중','Testing'));
+    const statusColor=_isLate?'var(--red)':(_phaseIsTc?'#6b4fe0':'var(--acc)');
+    const statusBg=_isLate?'var(--redbg)':(_phaseIsTc?'rgba(124,90,247,.1)':'var(--accbg)');
     const extBadge=_isExt?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#fff7ed;color:#ea580c">연장</span>`:'';
     const prefix=entry.id.replace(/-/g,'');
     const isSB=entry.type==='Super Bonus';
