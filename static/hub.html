@@ -2594,7 +2594,6 @@ async function memoSave(btn){
     const label=date.slice(5).replace('-','/');
     _NOTIF_DATA.unshift({id:`slotmemo_${gameName}_${date}_${Date.now()}`,type:'status',game:gameName,
       badge:{text:_tl('슬롯 메모','Slot Memo'),cls:'blue'},sub:_tl(`${label} 슬롯 메모가 추가됐어요`,`Slot memo added for ${label}`),detectedAt:Date.now(),read:false});
-    _nSave(_NOTIF_DATA);
     _notifRefreshBadge();
   }
 
