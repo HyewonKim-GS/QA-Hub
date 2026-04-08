@@ -2664,8 +2664,8 @@ async function loadGameIssuesList(){
 
   // 사이드바 렌더
   const _byStart=(a,b)=>(a.qa_start||'').localeCompare(b.qa_start||'');
-  const testing=schedule.filter(e=>e.computed_status==='testing').sort(_byStart);
-  const other=schedule.filter(e=>e.computed_status!=='testing').sort(_byStart);
+  const testing=schedule.filter(e=>e.computed_status==='testing'||e.computed_status==='needs_action').sort(_byStart);
+  const other=schedule.filter(e=>e.computed_status!=='testing'&&e.computed_status!=='needs_action').sort(_byStart);
   let sideHtml='';
   if(testing.length>0){
     sideHtml+=`<div class="gi-list-hd" style="color:var(--green);display:flex;align-items:center;gap:5px"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#10b981"/></svg> ${_tl('테스트 중','Testing')}</div>`;
@@ -2673,7 +2673,11 @@ async function loadGameIssuesList(){
       const name=e.game_name.replace('SB_','');
       const isSB=e.game_name.startsWith('SB_')||e.type==='Super Bonus'||e.type==='SB';
       const safeKey=_giSafeKey(e.game_name);
-      sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(79,142,247,.12);color:#3b7ee8">${_tl('테스트중','Testing')}</span></div>`;
+      const _isLateItem=e.computed_status==='needs_action';
+      const _itemBadgeBg=_isLateItem?'var(--redbg)':'rgba(79,142,247,.12)';
+      const _itemBadgeColor=_isLateItem?'var(--red)':'#3b7ee8';
+      const _itemBadgeLbl=_isLateItem?_tl('⚠ 지연','⚠ Delayed'):_tl('테스트중','Testing');
+      sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:${_itemBadgeBg};color:${_itemBadgeColor}">${_itemBadgeLbl}</span></div>`;
     });
   }
   if(other.length>0){
