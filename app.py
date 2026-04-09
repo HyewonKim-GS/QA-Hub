@@ -1342,7 +1342,7 @@ async def api_game_links(name: str, tc_prefix: str = "", game_id: str = "", is_s
             f"/edit#gid={direction_gid}"
         )
 
-    # CTD Game Info: game_id > game_name > tc_code 순으로 매칭
+    # CTD Game Info: game_id > game_name(정규화) > tc_code 순으로 매칭
     ctd_info = CACHE.get("ctd_game_info", [])
     game_id_int: Optional[int] = None
     if game_id:
@@ -1351,13 +1351,14 @@ async def api_game_links(name: str, tc_prefix: str = "", game_id: str = "", is_s
         except ValueError:
             pass
     tc_code = resolved_prefix.lower() if resolved_prefix else ""
+    norm_name_for_ctd = _norm_tab(name)
     ctd_row: Optional[dict] = None
     for row in ctd_info:
         matched = False
         if game_id_int is not None and row["game_id_str"].isdigit():
             if int(row["game_id_str"]) == game_id_int:
                 matched = True
-        if not matched and row["game_name"].lower().strip() == name_lower:
+        if not matched and _norm_tab(row["game_name"]) == norm_name_for_ctd:
             matched = True
         if not matched and tc_code and tc_code in row["game_title"].lower():
             matched = True
@@ -1374,6 +1375,15 @@ async def api_game_links(name: str, tc_prefix: str = "", game_id: str = "", is_s
         studio = gt.split("/")[0].strip().upper() if "/" in gt else gt.strip().upper()
         if studio in ("SS", "DS"):
             result["studio"] = studio
+        # Sound 폴백: tc_prefix 없을 때 CTD game_title에서 코드 추출해 재시도
+        if result["sound"] is None and "/" in gt:
+            ctd_code = gt.split("/")[-1].strip().lower()
+            sound_gid = sound_tabs.get(ctd_code)
+            if sound_gid is not None:
+                result["sound"] = (
+                    f"https://docs.google.com/spreadsheets/d/{_SOUND_SHEET_ID}"
+                    f"/edit#gid={sound_gid}"
+                )
 
     # fast=1 이면 GDD/MATH Drive 검색 생략하고 즉시 반환
     if fast == "1":
