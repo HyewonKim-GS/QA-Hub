@@ -4,6 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>QA Hub</title>
+<link rel="manifest" href="/static/manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="QA Hub"/>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/hub.css">
 </head>
@@ -109,7 +113,13 @@
         <!-- 카드 헤더 -->
         <div class="card-hd" style="justify-content:space-between">
           <span class="sec-t"><span data-i18n="dash.tc.header" data-i18n-ko="테스트 진행 현황">테스트 진행 현황</span><span class="sec-badge" id="dash-week-badge">—</span></span>
-          <span style="font-size:11px;color:var(--t3)" id="dash-cache-stat" data-i18n="dash.cacheLoading" data-i18n-ko="캐시 로딩 중…">캐시 로딩 중…</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--t3)" id="dash-cache-stat" data-i18n="dash.cacheLoading" data-i18n-ko="캐시 로딩 중…">캐시 로딩 중…</span>
+            <button id="dash-refresh-btn" onclick="doRefresh()" title="데이터 새로고침" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;border:1.5px solid var(--bd);background:#fff;color:var(--t2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--accbd)';this.style.color='var(--acc)';this.style.background='var(--accbg)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--t2)';this.style.background='#fff'">
+              <svg id="dash-refresh-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span data-i18n="dash.refresh" data-i18n-ko="새로고침">새로고침</span>
+            </button>
+          </div>
         </div>
         <!-- 컬럼 헤더 -->
         <div style="display:grid;grid-template-columns:1fr 1px 300px;background:#fafbfe;border-bottom:1px solid var(--bd)">
@@ -3018,8 +3028,15 @@ async function renderDashboardTcCard(){
         el.onmouseover=e=>{el.style.background='#f0f4ff';};
         el.onmouseout=e=>{el.style.background='';};
       }
+      const total=bugs.length;
+      const done=bugs.filter(i=>{const s=(i.status||'').toLowerCase();return s.includes('done')||s.includes('완료')||s.includes('closed')||s.includes('fixed');}).length;
+      const remain=total-done;
+      const remainCol=remain===0?'var(--green)':(c>0?'var(--red)':'var(--amber)');
+      const issueCountHtml=total>0
+        ?`<span style="font-size:10px;color:var(--t3)">등록 <strong style="color:var(--t2)">${total}</strong> · 완료 <strong style="color:var(--green)">${done}</strong> · 잔여 <strong style="color:${remainCol}">${remain}</strong></span>`
+        :'';
       el.innerHTML=
-        (epicUrl?`<div style="font-size:10px;color:var(--t3);margin-bottom:4px">${epicIssue.key} ↗</div>`:'') +
+        (epicUrl||total>0?`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">${epicUrl?`<span style="font-size:10px;color:var(--t3)">${epicIssue.key} ↗</span>`:'<span></span>'}${issueCountHtml}</div>`:'') +
         _issueBarRow('Critical',c,maxV,'var(--red)','var(--redbg)','var(--redbd)')+
         _issueBarRow('Major',mj,maxV,'var(--amber)','var(--amberbg)','var(--amberbd)')+
         _issueBarRow('Minor',mn,maxV,'#94a3b8','var(--bg)','var(--bd2)');
@@ -3148,6 +3165,31 @@ function loadCacheStat(){
     .catch(()=>{el.textContent=_tl('서버 연결 오류','Server error');});
 }
 loadCacheStat();
+
+function doRefresh(){
+  const btn=document.getElementById('dash-refresh-btn');
+  const icon=document.getElementById('dash-refresh-icon');
+  const stat=document.getElementById('dash-cache-stat');
+  if(!btn||btn.disabled)return;
+  btn.disabled=true;
+  btn.style.opacity='.5';
+  btn.style.cursor='default';
+  // 아이콘 스피닝
+  icon.style.transition='';
+  let angle=0;
+  const spin=setInterval(()=>{angle=(angle+15)%360;icon.style.transform=`rotate(${angle}deg)`;},30);
+  stat.innerHTML=`${_tl('새로고침 중…','Refreshing…')} <span style="color:var(--acc)">●</span>`;
+  fetch('/api/refresh',{method:'POST'})
+    .then(()=>{
+      // 로드 완료될 때까지 폴링
+      const poll=()=>fetch('/api/status').then(r=>r.json()).then(d=>{
+        if(d.loading&&!d.ready){setTimeout(poll,1500);}
+        else{clearInterval(spin);icon.style.transform='';btn.disabled=false;btn.style.opacity='';btn.style.cursor='pointer';loadCacheStat();if(typeof renderDashboardTcCard==='function')renderDashboardTcCard();}
+      }).catch(()=>{clearInterval(spin);icon.style.transform='';btn.disabled=false;btn.style.opacity='';btn.style.cursor='pointer';});
+      setTimeout(poll,1000);
+    })
+    .catch(()=>{clearInterval(spin);icon.style.transform='';btn.disabled=false;btn.style.opacity='';btn.style.cursor='pointer';stat.textContent=_tl('새로고침 실패','Refresh failed');});
+}
 
 // ── Notifications ──
 function _getMyUserId(){

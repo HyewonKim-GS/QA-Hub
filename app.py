@@ -37,6 +37,7 @@ from search import (
     search_slack_channels,
     fetch_live_issues,
     call_mcp_tool,
+    reset_mcp_session,
 )
 
 # ── Cache (L38~246) ───────────────────────────────────────────────────────────
@@ -371,6 +372,42 @@ async def api_refresh():
     """수동 캐시 갱신."""
     asyncio.create_task(_load_cache())
     return JSONResponse({"message": "캐시 갱신을 시작했습니다."})
+
+
+@app.post("/api/reset_mcp")
+async def api_reset_mcp():
+    """MCP 세션 리셋 후 게임 코드 맵 재로드."""
+    reset_mcp_session()
+    loop = asyncio.get_event_loop()
+
+    def _load():
+        sheet_map = _load_contents_sheet()
+        raw = call_mcp_tool("search_games", {"query": "", "tags": []})
+        if not raw:
+            seen = {}
+            for entry in sheet_map.values():
+                seen[entry["game_name"]] = entry
+            code_map = {
+                entry["game_code"].lower(): entry["game_name"]
+                for entry in seen.values()
+                if entry.get("game_code")
+            }
+            return code_map, list(seen.values()), sheet_map, True
+        import json as _json
+        games = _json.loads(raw).get("results", [])
+        code_map = {g["game_code"].lower(): g["game_name"] for g in games if g.get("game_code") and g.get("game_name")}
+        for key, entry in sheet_map.items():
+            if entry.get("game_code") and entry["game_code"].lower() == key:
+                if key not in code_map:
+                    code_map[key] = entry["game_name"]
+        return code_map, games, sheet_map, False
+
+    code_map, games, sheet_map, mcp_failed = await loop.run_in_executor(_executor, _load)
+    CACHE["game_code_map"] = code_map
+    CACHE["game_list"] = games
+    CACHE["sheet_games"] = sheet_map
+    CACHE["mcp_error"] = "MCP SSE 서버 연결 실패" if mcp_failed else None
+    return JSONResponse({"ok": not mcp_failed, "game_count": len(games)})
 
 
 @app.get("/api/search")

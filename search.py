@@ -659,9 +659,21 @@ MIME_LABELS = {
 }
 
 
+def reset_mcp_session():
+    """MCP 세션을 강제 리셋. 다음 call_mcp_tool 호출 시 새 세션 생성."""
+    global _mcp_session
+    with _mcp_session_lock:
+        _mcp_session = None
+
+
 def call_mcp_tool(tool_name: str, arguments: dict) -> Optional[str]:
-    """MCP SSE 서버의 임의 tool을 호출하고 텍스트 결과를 반환. 영구 세션 재사용."""
-    return _get_mcp_session().call(tool_name, arguments)
+    """MCP SSE 서버의 임의 tool을 호출하고 텍스트 결과를 반환. 영구 세션 재사용.
+    실패 시 세션 리셋 후 1회 자동 재시도."""
+    result = _get_mcp_session().call(tool_name, arguments)
+    if result is None:
+        reset_mcp_session()
+        result = _get_mcp_session().call(tool_name, arguments)
+    return result
 
 
 def drive_search_mcp(query: str, page_size: int = 20) -> List[Dict]:
