@@ -369,7 +369,8 @@ async def api_recent_bugs():
 
 @app.post("/api/refresh")
 async def api_refresh():
-    """수동 캐시 갱신."""
+    """수동 캐시 갱신. MCP 세션도 리셋하여 Drive 재연결 포함."""
+    reset_mcp_session()
     asyncio.create_task(_load_cache())
     return JSONResponse({"message": "캐시 갱신을 시작했습니다."})
 

@@ -3127,19 +3127,6 @@ function _renderWeeklyBugs(data){
   renderDashboardTcCard();
 })();
 
-// ── MCP 재연결 ────────────────────────────────────────────
-function _resetMcp(btn){
-  btn.disabled=true;
-  btn.textContent=_tl('연결 중…','Connecting…');
-  fetch('/api/reset_mcp',{method:'POST'})
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.ok) loadCacheStat();
-      else{btn.disabled=false;btn.textContent=_tl('재연결','Reconnect');}
-    })
-    .catch(()=>{btn.disabled=false;btn.textContent=_tl('재연결','Reconnect');});
-}
-
 // ── 캐시 상태 표시 ────────────────────────────────────────
 function loadCacheStat(){
   const el=document.getElementById('dash-cache-stat');
@@ -3156,9 +3143,9 @@ function loadCacheStat(){
         const errParts=[];
         if(d.jira_error) errParts.push('Jira');
         if(d.confluence_error) errParts.push('Confluence');
+        if(d.mcp_error) errParts.push('Drive');
         let stat=`Jira <strong style="color:var(--t1)">${d.jira_count.toLocaleString()}${_tl('건','')}</strong> · Confluence <strong style="color:var(--t1)">${d.confluence_count.toLocaleString()}${_tl('건','')}</strong> ${_tl('로드됨','loaded')}`;
-        if(errParts.length) stat+=` <span style="color:var(--red);font-size:11px">⚠ ${errParts.join('/')} ${_tl('연결 오류','connection error')}</span>`;
-        if(d.mcp_error) stat+=` <span style="color:var(--red);font-size:11px">⚠ Drive ${_tl('연결 오류','connection error')}</span> <button onclick="_resetMcp(this)" style="padding:1px 8px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:11px;cursor:pointer;font-family:inherit;font-weight:600">${_tl('재연결','Reconnect')}</button>`;
+        if(errParts.length) stat+=` <span style="color:var(--red);font-size:11px">⚠ ${errParts.join('/')} ${_tl('연결 오류 — 새로고침으로 재시도','connection error — retry with refresh')}</span>`;
         el.innerHTML=stat;
       }
     })
