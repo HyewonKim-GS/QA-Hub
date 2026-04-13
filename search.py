@@ -8,6 +8,7 @@ import os
 import re
 import base64
 import json
+import subprocess
 import threading
 import time
 import queue
@@ -540,113 +541,12 @@ def search_slack_channels(query: str) -> List[Dict]:
     return results
 
 
-# ── Google Drive search via MCP ──────────────────────────────────────────────
+# ── GS OS REST API + GWS Drive search ────────────────────────────────────────
 
-MCP_BASE = os.environ.get("MCP_SSE_URL", "http://172.16.50.144:3100")
+GS_OS_API_URL = os.environ.get("GS_OS_API_URL", "https://gs-os-dev.backoffice.bagelgames.com")
 
-
-class _MCPSession:
-    """MCP SSE 세션을 영구적으로 유지하는 싱글턴. 연결 1개를 재사용.
-    동시 요청은 req_id별 개별 큐로 격리해 이벤트 섞임 방지.
-    """
-
-    def __init__(self):
-        self._lock = threading.Lock()
-        self._session_url: Optional[str] = None
-        self._req_id = 1  # initialize=1, 이후 2부터
-        self._ready = threading.Event()
-        self._pending: Dict[int, queue.Queue] = {}  # req_id → 응답 큐
-        self._start()
-
-    def _start(self):
-        self._session_url = None
-        self._ready.clear()
-        threading.Thread(target=self._read_sse, daemon=True).start()
-
-    def _read_sse(self):
-        try:
-            r = requests.get(f"{MCP_BASE}/sse", stream=True, timeout=None,
-                             headers={"Accept": "text/event-stream"})
-            buf = ""
-            for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
-                buf += chunk
-                while "\n" in buf:
-                    line, buf = buf.split("\n", 1)
-                    line = line.rstrip("\r")
-                    if not line.startswith("data:"):
-                        continue
-                    data = line[5:].strip()
-                    if self._session_url is None and data.startswith("/"):
-                        self._session_url = data
-                        try:
-                            requests.post(
-                                f"{MCP_BASE}{self._session_url}",
-                                json={"jsonrpc": "2.0", "id": 1, "method": "initialize",
-                                      "params": {"protocolVersion": "2024-11-05",
-                                                 "capabilities": {},
-                                                 "clientInfo": {"name": "qa-search", "version": "1.0"}}},
-                                timeout=5,
-                            )
-                        except Exception:
-                            pass
-                    else:
-                        # req_id 파싱해서 해당 큐에 전달
-                        try:
-                            parsed = json.loads(data)
-                            rid = parsed.get("id")
-                            with self._lock:
-                                q = self._pending.get(rid)
-                            if q:
-                                q.put(data)
-                            elif not self._ready.is_set():
-                                # initialize 응답 (id=1) — ready 신호
-                                self._ready.set()
-                        except Exception:
-                            if not self._ready.is_set():
-                                self._ready.set()
-        except Exception as e:
-            console.print(f"[yellow][MCP] SSE 연결 끊김, 재연결 예정: {e}[/yellow]")
-        finally:
-            time.sleep(3)
-            self._start()
-
-    def call(self, tool_name: str, arguments: dict, timeout: int = 15) -> Optional[str]:
-        if not self._ready.wait(timeout=8):
-            return None
-        with self._lock:
-            self._req_id += 1
-            req_id = self._req_id
-            resp_q: queue.Queue = queue.Queue()
-            self._pending[req_id] = resp_q
-        try:
-            requests.post(
-                f"{MCP_BASE}{self._session_url}",
-                json={"jsonrpc": "2.0", "id": req_id, "method": "tools/call",
-                      "params": {"name": tool_name, "arguments": arguments}},
-                timeout=5,
-            )
-            ev = resp_q.get(timeout=timeout)
-            resp = json.loads(ev)
-            return resp["result"]["content"][0]["text"]
-        except Exception as e:
-            console.print(f"[red][MCP:{tool_name}] 오류: {e}[/red]")
-            return None
-        finally:
-            with self._lock:
-                self._pending.pop(req_id, None)
-
-
-_mcp_session: Optional[_MCPSession] = None
-_mcp_session_lock = threading.Lock()
-
-
-def _get_mcp_session() -> _MCPSession:
-    global _mcp_session
-    if _mcp_session is None:
-        with _mcp_session_lock:
-            if _mcp_session is None:
-                _mcp_session = _MCPSession()
-    return _mcp_session
+_gs_os_games: Optional[List[Dict]] = None
+_gs_os_games_lock = threading.Lock()
 
 MIME_LABELS = {
     "application/vnd.google-apps.document": "Docs",
@@ -660,121 +560,178 @@ MIME_LABELS = {
 
 
 def reset_mcp_session():
-    """MCP 세션을 강제 리셋. 다음 call_mcp_tool 호출 시 새 세션 생성."""
-    global _mcp_session
-    with _mcp_session_lock:
-        _mcp_session = None
+    """게임 목록 캐시 리셋. 다음 call_mcp_tool 호출 시 REST API에서 재조회."""
+    global _gs_os_games
+    with _gs_os_games_lock:
+        _gs_os_games = None
+
+
+def _load_gs_os_games() -> List[Dict]:
+    """GS OS REST API에서 전체 게임 목록을 조회하고 캐시에 저장."""
+    global _gs_os_games
+    resp = requests.get(f"{GS_OS_API_URL}/api/games", timeout=15)
+    resp.raise_for_status()
+    games = resp.json().get("games", [])
+    _gs_os_games = games
+    return games
+
+
+def _get_gs_os_games() -> List[Dict]:
+    """캐시된 게임 목록 반환. 없으면 REST API에서 조회."""
+    global _gs_os_games
+    if _gs_os_games is None:
+        with _gs_os_games_lock:
+            if _gs_os_games is None:
+                _load_gs_os_games()
+    return _gs_os_games or []
+
+
+_GS_OS_CLI_ENV = {
+    **os.environ,
+    "GS_OS_SERVER_URL": os.environ.get("GS_OS_API_URL", "https://gs-os-dev.backoffice.bagelgames.com"),
+    "NODE_TLS_REJECT_UNAUTHORIZED": "0",
+}
+
+
+def _run_gs_os(*args: str, timeout: int = 15) -> Optional[str]:
+    """gs-os CLI 실행 후 stdout JSON 반환. 실패 시 None."""
+    try:
+        r = subprocess.run(
+            ["gs-os", *args],
+            capture_output=True, text=True, timeout=timeout,
+            env=_GS_OS_CLI_ENV,
+        )
+        if r.returncode != 0 or not r.stdout.strip():
+            return None
+        return r.stdout.strip()
+    except Exception as e:
+        console.print(f"[red][gs-os {args[0]}] 오류: {e}[/red]")
+        return None
 
 
 def call_mcp_tool(tool_name: str, arguments: dict) -> Optional[str]:
-    """MCP SSE 서버의 임의 tool을 호출하고 텍스트 결과를 반환. 영구 세션 재사용.
-    실패 시 세션 리셋 후 1회 자동 재시도."""
-    result = _get_mcp_session().call(tool_name, arguments)
-    if result is None:
-        reset_mcp_session()
-        result = _get_mcp_session().call(tool_name, arguments)
-    return result
+    """GS OS 도구 호출. 쿼리 있는 search_games는 CLI, 나머지는 REST 캐시 또는 CLI."""
+    try:
+        if tool_name == "search_games":
+            query = arguments.get("query", "").strip()
+            if query:
+                # 자연어 쿼리 → gs-os search (태그 기반 매칭)
+                raw = _run_gs_os("search", query)
+                if raw:
+                    data = json.loads(raw)
+                    games = data.get("data", [])
+                    return json.dumps({"results": games})
+                # CLI 검색 실패(한국어 등) → 빈 결과 (호출측에서 캐시 목록과 병합)
+                return json.dumps({"results": []})
+            # 쿼리 없으면 전체 목록 반환
+            games = _get_gs_os_games()
+            return json.dumps({"results": games})
+
+        elif tool_name == "get_game":
+            game_name = arguments.get("game_name", "").lower().strip()
+            games = _get_gs_os_games()
+            # 이름으로 game_id 조회 후 CLI로 상세 정보 가져오기
+            for g in games:
+                if g.get("game_name", "").lower() == game_name or \
+                   g.get("game_code", "").lower() == game_name:
+                    game_id = g.get("game_id")
+                    if game_id:
+                        raw = _run_gs_os("get", str(game_id))
+                        if raw:
+                            data = json.loads(raw)
+                            return json.dumps(data.get("data", g))
+                    return json.dumps(g)
+            return None
+
+        elif tool_name == "similar_games":
+            game_id = arguments.get("game_id")
+            top_n = arguments.get("top_n", 5)
+            if game_id:
+                return _run_gs_os("similar", str(game_id), "--limit", str(top_n))
+            return None
+
+        elif tool_name == "resolve_query":
+            query = arguments.get("query", "")
+            if query:
+                return _run_gs_os("search", query)
+            return None
+
+        elif tool_name == "portfolio_stats":
+            return _run_gs_os("stats")
+
+        elif tool_name == "get_dictionary":
+            tag = arguments.get("tag_name", "")
+            if tag:
+                return _run_gs_os("dict", tag)
+            return _run_gs_os("dict")
+
+        else:
+            return None
+
+    except Exception as e:
+        console.print(f"[red][GS OS:{tool_name}] 오류: {e}[/red]")
+        return None
 
 
 def drive_search_mcp(query: str, page_size: int = 20) -> List[Dict]:
-    """MCP SSE 서버를 통해 Google Drive 파일 제목 검색."""
+    """GWS CLI를 통해 Google Drive 파일 제목 검색."""
     results: List[Dict] = []
-    events: queue.Queue = queue.Queue()
-    session_url: List[str] = [None]
+    seen: set = set()
 
-    def read_sse():
+    def _do_search(q: str) -> List[Dict]:
+        params = json.dumps({
+            "q": q,
+            "supportsAllDrives": "true",
+            "corpora": "allDrives",
+            "pageSize": page_size,
+            "orderBy": "name",
+        })
         try:
-            r = requests.get(f"{MCP_BASE}/sse", stream=True, timeout=30)
-            for raw in r.iter_lines(decode_unicode=True):
-                if raw.startswith("data:"):
-                    data = raw[5:].strip()
-                    if session_url[0] is None and data.startswith("/"):
-                        session_url[0] = data
-                    else:
-                        events.put(data)
-        except Exception as e:
-            console.print(f"[red][Drive SSE] 연결 오류: {e}[/red]")
+            r = subprocess.run(
+                ["gws", "drive", "files", "list", "--params", params, "--format", "json"],
+                capture_output=True, text=True, timeout=15,
+            )
+            return json.loads(r.stdout).get("files", [])
+        except Exception:
+            return []
 
-    t = threading.Thread(target=read_sse, daemon=True)
-    t.start()
+    def _append(files: List[Dict]):
+        for f in files:
+            file_id = f.get("id", "")
+            if file_id and file_id not in seen:
+                mime = f.get("mimeType", "")
+                label = MIME_LABELS.get(mime, mime.split("/")[-1])
+                results.append({
+                    "id": file_id,
+                    "title": f.get("name", ""),
+                    "mime_label": label,
+                    "url": f"https://drive.google.com/open?id={file_id}",
+                })
+                seen.add(file_id)
 
-    # session URL 대기
-    for _ in range(50):
-        if session_url[0]:
-            break
-        time.sleep(0.1)
-    if not session_url[0]:
-        console.print("[yellow][Drive SSE] session URL 대기 시간 초과[/yellow]")
-        return results
-
-    url = f"{MCP_BASE}{session_url[0]}"
-
-    try:
-        # initialize
-        requests.post(url, json={
-            "jsonrpc": "2.0", "id": 1, "method": "initialize",
-            "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "qa-search", "version": "1.0"}},
-        }, timeout=5)
-        events.get(timeout=5)
-
-        def _do_search(req_id: int, q: str):
-            requests.post(url, json={
-                "jsonrpc": "2.0", "id": req_id, "method": "tools/call",
-                "params": {"name": "drive_search", "arguments": {"query": q, "page_size": page_size}},
-            }, timeout=5)
-            ev = events.get(timeout=15)
-            resp = json.loads(ev)
-            text = resp["result"]["content"][0]["text"]
-            return json.loads(text).get("files", [])
-
-        def _append(files):
-            seen = {r["id"] for r in results}
-            for f in files:
-                file_id = f.get("id", "")
-                if file_id and file_id not in seen:
-                    mime = f.get("mimeType", "")
-                    label = MIME_LABELS.get(mime, mime.split("/")[-1])
-                    results.append({
-                        "id": file_id,
-                        "title": f.get("name", ""),
-                        "mime_label": label,
-                        "url": f"https://drive.google.com/open?id={file_id}",
-                    })
-                    seen.add(file_id)
-
-        # 아포스트로피 제거 (Drive API query에 포함 불가)
-        safe = query.replace("'", "").replace("\u2019", "").replace("'", "")
-        req_id = 2
-        # 1차: 파일명 검색 (공백 그대로)
-        _append(_do_search(req_id, f"name contains '{safe}'"))
-        req_id += 1
-        # 2차: 공백 → 언더스코어
-        underscore = safe.replace(" ", "_")
-        if underscore != safe:
-            _append(_do_search(req_id, f"name contains '{underscore}'"))
-            req_id += 1
-        # 3차: and → & 변환
-        ampersand = safe.replace(" and ", " & ")
-        if ampersand != safe:
-            _append(_do_search(req_id, f"name contains '{ampersand}'"))
-            req_id += 1
-        # 4차: SB_ 접두사 → baseName & Flame_SB 패턴 (파일명이 "GameName_SB" 형태인 경우)
-        if query.upper().startswith("SB_"):
-            base = query[3:].replace("'", "").replace("\u2019", "").replace("'", "")
-            base_amp = base.replace(" and ", " & ")
-            _append(_do_search(req_id, f"name contains '{base_amp}_SB'"))
-            req_id += 1
-        # 5차: 아포스트로피 포함 쿼리 → 아포스트로피 전후 중 가장 긴 파트만 검색
-        # (예: Luck'n'Roll Wheels → "Roll Wheels" 로 검색)
-        if "'" in query or "\u2019" in query or "'" in query:
-            parts = query.replace("\u2019", "'").replace("'", "'").split("'")
-            longest = max(parts, key=len).strip()
-            if longest and longest != query.strip():
-                safe_longest = longest.replace("'", "").replace("\u2019", "").replace("'", "")
-                _append(_do_search(req_id, f"name contains '{safe_longest}'"))
-                req_id += 1
-    except Exception as e:
-        console.print(f"[red][Drive] 오류: {e}[/red]")
+    safe = query.replace("'", "").replace("\u2019", "").replace("\u2018", "")
+    # 1차: 파일명 검색 (공백 그대로)
+    _append(_do_search(f"name contains '{safe}'"))
+    # 2차: 공백 → 언더스코어
+    underscore = safe.replace(" ", "_")
+    if underscore != safe:
+        _append(_do_search(f"name contains '{underscore}'"))
+    # 3차: and → & 변환
+    ampersand = safe.replace(" and ", " & ")
+    if ampersand != safe:
+        _append(_do_search(f"name contains '{ampersand}'"))
+    # 4차: SB_ 접두사
+    if query.upper().startswith("SB_"):
+        base = query[3:].replace("'", "").replace("\u2019", "").replace("\u2018", "")
+        base_amp = base.replace(" and ", " & ")
+        _append(_do_search(f"name contains '{base_amp}_SB'"))
+    # 5차: 아포스트로피 포함 쿼리 → 가장 긴 파트
+    if "'" in query or "\u2019" in query or "\u2018" in query:
+        parts = query.replace("\u2019", "'").replace("\u2018", "'").split("'")
+        longest = max(parts, key=len).strip()
+        if longest and longest != query.strip():
+            safe_longest = longest.replace("'", "").replace("\u2019", "").replace("\u2018", "")
+            _append(_do_search(f"name contains '{safe_longest}'"))
 
     return results
 
