@@ -74,6 +74,12 @@ Add synonyms to `RELATED` dict in `search.py`. Each entry maps a word to its syn
   - `search.py` — `_gpt_translate()`: 검색어 한↔영 번역 (동의어 사전에 없는 단어 fallback), 결과는 `_TRANS_CACHE`에 메모이제이션
   - `app.py` — `_process_chat()`: 채팅 메시지에서 검색 키워드 추출 및 의도 분석
 
+### QA 시트 자동 조회 (`_autofill_sheet_id`)
+- `api/schedule` 호출 시 `qa_sheet_id`가 없는 항목 자동 조회
+- `sheet_searched=1`이어도 `qa_start <= today`이면 **1시간 주기 재시도** (`_SHEET_RETRY_TS` dict로 스로틀)
+- 재시도 이유: 시트는 QA 시작일 무렵 생성되므로, 등록 시점(이전)에 검색 실패해도 나중에 찾을 수 있음
+- 일반 게임: MCP `get_game` 우선 → Drive 검색 fallback / SB 게임: Drive 검색 + "SB" 키워드
+
 ### Game panel document links (`/api/game_links`)
 - Returns TC / GDD / MATH / CTD / Sound / 연출 links for the game side panel
 - **GDD/MATH**: real-time Drive folder search — `_search_keywords()` tries tc_prefix → apostrophe-split longest part → `&→and` → raw name

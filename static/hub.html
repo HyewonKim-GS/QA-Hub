@@ -637,6 +637,9 @@ function showPage(key,el){
   const p=PAGES[key];
   document.getElementById('page-title').textContent=p.title;
   document.getElementById('page-sub').textContent=p.sub;
+  // 스케줄 페이지는 overflow:hidden으로 전환해서 달력이 화면을 채우도록
+  const _content=document.querySelector('.content');
+  if(_content) _content.classList.toggle('sched-active', key==='schedule');
   if(key==='live-issues'){
     const _moSel=document.getElementById('issue-mo');
     if(_moSel && _moSel.value==='all') _moSel.value=String(new Date().getMonth()+1);
@@ -649,8 +652,8 @@ function showPage(key,el){
   if(_inp){_inp.value='';document.getElementById('hub-search-drop').style.display='none';}
 }
 function setView(v){
-  document.getElementById('view-month').style.display=v==='month'?'block':'none';
-  document.getElementById('view-week').style.display=v==='week'?'block':'none';
+  document.getElementById('view-month').style.display=v==='month'?'flex':'none';
+  document.getElementById('view-week').style.display=v==='week'?'flex':'none';
   document.getElementById('vt-month').classList.toggle('on',v==='month');
   document.getElementById('vt-week').classList.toggle('on',v==='week');
 }
@@ -2671,10 +2674,19 @@ async function loadGameIssuesList(){
   _giAllEntries=schedule;
   _giQueue=[];
 
+  // 이번 주 월요일 계산
+  const _todayDt=new Date();
+  const _dow=_todayDt.getDay();
+  const _mondayDt=new Date(_todayDt);
+  _mondayDt.setDate(_todayDt.getDate()-(_dow===0?6:_dow-1));
+  const _weekStart=_mondayDt.toISOString().slice(0,10);
+
   // 사이드바 렌더
   const _byStart=(a,b)=>(a.qa_start||'').localeCompare(b.qa_start||'');
   const testing=schedule.filter(e=>e.computed_status==='testing'||e.computed_status==='needs_action').sort(_byStart);
-  const other=schedule.filter(e=>e.computed_status!=='testing'&&e.computed_status!=='needs_action').sort(_byStart);
+  const scheduled=schedule.filter(e=>e.computed_status!=='testing'&&e.computed_status!=='needs_action'&&e.computed_status!=='done').sort(_byStart);
+  const doneRecent=schedule.filter(e=>e.computed_status==='done'&&(e.qa_end||'')>=_weekStart).sort((a,b)=>(b.qa_end||'').localeCompare(a.qa_end||''));
+
   let sideHtml='';
   if(testing.length>0){
     sideHtml+=`<div class="gi-list-hd" style="color:var(--green);display:flex;align-items:center;gap:5px"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#10b981"/></svg> ${_tl('테스트 중','Testing')}</div>`;
@@ -2689,15 +2701,26 @@ async function loadGameIssuesList(){
       sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:${_itemBadgeBg};color:${_itemBadgeColor}">${_itemBadgeLbl}</span></div>`;
     });
   }
-  if(other.length>0){
+  if(scheduled.length>0){
     sideHtml+=`<div class="gi-list-hd" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="2.5" width="12" height="10" rx="2"/><path d="M1 5.5h12M4.5 1v3M9.5 1v3"/></svg> ${_tl('등록된 일정','Scheduled')}</div>`;
-    other.forEach(e=>{
+    scheduled.forEach(e=>{
       const name=e.game_name.replace('SB_','');
       const isSB=e.game_name.startsWith('SB_')||e.type==='Super Bonus'||e.type==='SB';
       const cls=_STATUS_CLS[e.computed_status||'pending']||'ev-plan';
       const lbl=_statusLbl(e.computed_status||'pending');
       sideHtml+=`<div class="gi-game-item"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span class="cal-event ${cls}" style="white-space:nowrap;font-size:9px">${lbl}</span></div>`;
     });
+  }
+  if(doneRecent.length>0){
+    sideHtml+=`<div class="gi-list-hd" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="_giToggleDone()"><span style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="2,7 6,11 12,3"/></svg> ${_tl('완료된 일정','Completed')}</span><span id="gi-done-arrow" style="font-size:9px;color:var(--t3)">▶</span></div>`;
+    sideHtml+=`<div id="gi-done-items" style="display:none">`;
+    doneRecent.forEach(e=>{
+      const name=e.game_name.replace('SB_','');
+      const isSB=e.game_name.startsWith('SB_')||e.type==='Super Bonus'||e.type==='SB';
+      const safeKey=_giSafeKey(e.game_name);
+      sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name" style="color:var(--t2)">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.qa_end?e.qa_end.slice(5).replace('-','/'):''}${e.assignee?' · '+e.assignee:''}</div></div><span class="cal-event ev-done" style="white-space:nowrap;font-size:9px">${_tl('완료','Done')}</span></div>`;
+    });
+    sideHtml+=`</div>`;
   }
   if(!sideHtml) sideHtml=`<div style="padding:16px 10px;text-align:center;font-size:11px;color:var(--t3)">${_tl('등록된 게임이 없습니다','No games registered')}</div>`;
   listEl.innerHTML=`<div class="gi-list-hd">${_tl('게임 목록','Game List')}</div>`+sideHtml;
@@ -2717,6 +2740,15 @@ async function loadGameIssuesList(){
   if(firstItem) firstItem.classList.add('on');
   // 추가 힌트 카드
   _giUpdateAddHint();
+}
+
+function _giToggleDone(){
+  const el=document.getElementById('gi-done-items');
+  const arrow=document.getElementById('gi-done-arrow');
+  if(!el)return;
+  const open=el.style.display==='none';
+  el.style.display=open?'':'none';
+  if(arrow)arrow.textContent=open?'▼':'▶';
 }
 
 function giSelectGame(safeKey){
@@ -2809,6 +2841,8 @@ async function _giRenderCard(entry){
       const bugs=jira.filter(i=>{
         const t=(i.type||'').toLowerCase();
         if(t!=='bug'&&t!=='버그') return false;
+        // game 필드가 있으면 현재 게임과 일치하는지 확인 (다른 게임 버그 제외)
+        if(i.game&&i.game.toLowerCase()!==displayName.toLowerCase()) return false;
         if(isSB) return i.is_sb===true;
         return i.is_sb!==true;
       });
@@ -3004,10 +3038,12 @@ async function renderDashboardTcCard(){
       const bugs=allJira.filter(i=>{
         const t=(i.type||'').toLowerCase();
         if(t!=='bug'&&t!=='버그') return false;
+        // game 필드가 있으면 현재 게임과 일치하는지 확인 (다른 게임 버그 제외)
+        if(i.game&&i.game.toLowerCase()!==displayName.toLowerCase()) return false;
         if(isSB) return i.is_sb===true;
         return i.is_sb!==true;
       });
-      // 에픽 URL 추출 (type='에픽' 또는 'epic')
+      // 에픽 URL (헤더 링크용)
       const epicIssue=allJira.find(i=>{const t=(i.type||'').toLowerCase();return t==='에픽'||t==='epic';});
       const epicUrl=epicIssue?epicIssue.url:'';
       let c=0,mj=0,mn=0;
@@ -3020,13 +3056,11 @@ async function renderDashboardTcCard(){
       const maxV=Math.max(c,mj,mn,1);
       const el=document.getElementById('issue-row-'+entry.id);
       if(!el)return;
-      const epicCursor=epicUrl?'cursor:pointer':'';
-      const epicTitle=epicUrl?` title="${epicIssue.key} ${epicIssue.summary||''}"`:'' ;
-      el.setAttribute('style',el.getAttribute('style')+(epicUrl?';cursor:pointer':''));
       if(epicUrl){
+        el.style.cursor='pointer';
         el.onclick=e=>{e.stopPropagation();window.open(epicUrl,'_blank','noopener');};
-        el.onmouseover=e=>{el.style.background='#f0f4ff';};
-        el.onmouseout=e=>{el.style.background='';};
+        el.onmouseover=()=>{el.style.background='#f0f4ff';};
+        el.onmouseout=()=>{el.style.background='';};
       }
       const total=bugs.length;
       const done=bugs.filter(i=>{const s=(i.status||'').toLowerCase();return s.includes('done')||s.includes('완료')||s.includes('closed')||s.includes('fixed');}).length;

@@ -635,6 +635,8 @@ _TC_CACHE_TTL = 300    # 5분
 _GL_CACHE: dict = {}   # (name, tc_prefix, game_id, is_sb) -> (result, timestamp)
 _GL_CACHE_TTL = 600    # 10분
 
+_SHEET_RETRY_TS: dict = {}  # entry_id -> datetime (마지막 재검색 시각)
+
 _REPOB_BIN = os.getenv("REPOB_BIN", "/Users/kimhyewon/.claude/plugins/marketplaces/bagel-marketplace/plugins/repob/skills/repob/bin/repob")
 _GAMES_BRANCHES: dict = {"branches": [], "ts": 0.0}
 
@@ -1553,14 +1555,26 @@ async def api_schedule_get():
     """QA 일정 목록 반환 (computed_status 포함, qa_sheet_id 자동 조회)."""
     entries = _read_schedule()
     today = date.today()
+    today_str = today.isoformat()
     loop = asyncio.get_event_loop()
+
+    # sheet_searched=1 이지만 qa_sheet_id가 없고 qa_start가 오늘 이전인 항목 → 1시간 주기 재시도
+    retry_interval = 3600
+    for e in entries:
+        if not e.get("qa_sheet_id") and e.get("sheet_searched") and e.get("qa_start", "") <= today_str:
+            eid = e.get("id", "")
+            last_ts = _SHEET_RETRY_TS.get(eid)
+            if last_ts is None or (datetime.now() - last_ts).total_seconds() > retry_interval:
+                e["sheet_searched"] = 0  # 재검색 허용
+                _SHEET_RETRY_TS[eid] = datetime.now()
+
     missing = [e for e in entries if not e.get("qa_sheet_id") and not e.get("sheet_searched")]
     if missing:
         await asyncio.gather(*[
             loop.run_in_executor(_executor, _autofill_sheet_id, e)
             for e in missing
         ])
-        # 찾든 못 찾든 _sheet_searched 마킹을 schedule.json에 저장 (Drive 재검색 방지)
+        # 찾든 못 찾든 _sheet_searched 마킹을 DB에 저장 (Drive 재검색 방지)
         _write_schedule(entries)
     for e in entries:
         e["computed_status"] = _compute_status(e, today)
