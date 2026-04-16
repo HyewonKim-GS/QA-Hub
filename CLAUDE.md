@@ -46,16 +46,19 @@ docs/presentation.html — QA Hub 팀 소개 발표 슬라이드 (/presentation 
 
 ### Google Drive search
 - Real-time (not cached); called on every search request
-- Connects to local MCP SSE server at `http://172.16.50.144:3100` using JSON-RPC over SSE
-- Query format must be `name contains 'keyword'` (Google Drive API query syntax)
-- Session-per-request: opens SSE → gets session URL → initializes → calls `drive_search` → closes
+- **GWS CLI subprocess** (`drive_search_mcp` in `search.py`) — MCP SSE 방식 제거됨
+- Query format: `name contains 'keyword'` (Google Drive API query syntax)
 
-### gs-os-ontology MCP
-- Same MCP SSE server at `http://172.16.50.144:3100` — shared with Google Drive
-- `call_mcp_tool(tool_name, arguments)` in `search.py` is the generic caller for any MCP tool
-- Used tools:
-  - `search_games` — 게임 목록 검색 (서버 시작 시 전체 게임 목록 캐싱에도 사용)
-  - `get_game` — 게임명으로 상세 정보(Drive 링크 등) 조회
+### GS OS (게임 온톨로지)
+- `call_mcp_tool(tool_name, arguments)` in `search.py` — 인터페이스는 동일, 내부 구현 변경됨
+- **게임 목록**: GS OS REST API (`GS_OS_API_URL/api/games`) → `_gs_os_games` 인메모리 캐시
+- **CLI 도구** (`gs-os`): 환경변수 `GS_OS_SERVER_URL` + `NODE_TLS_REJECT_UNAUTHORIZED=0`
+  - `search_games(query)` → `gs-os search <query>` (자연어/태그, 한국어는 빈 결과)
+  - `get_game(game_name)` → REST 캐시에서 game_id 조회 후 `gs-os get <id>`
+  - `similar_games` → `gs-os similar <id>`
+  - `portfolio_stats` → `gs-os stats`
+  - `get_dictionary` → `gs-os dict [tag]`
+- 서버 시작 시 전체 게임 목록 캐싱 (`_get_gs_os_games()`)
 - Results tagged with `"from_ontology": True` and merged with Drive results (ontology results take priority)
 
 ### Local search
