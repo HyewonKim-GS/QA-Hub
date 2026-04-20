@@ -53,7 +53,7 @@ docs/presentation.html — QA Hub 팀 소개 발표 슬라이드 (/presentation 
 - `call_mcp_tool(tool_name, arguments)` in `search.py` — 인터페이스는 동일, 내부 구현 변경됨
 - **게임 목록**: GS OS REST API (`GS_OS_API_URL/api/games`) → `_gs_os_games` 인메모리 캐시
 - **CLI 도구** (`gs-os`): 환경변수 `GS_OS_SERVER_URL` + `NODE_TLS_REJECT_UNAUTHORIZED=0`
-  - `search_games(query)` → `gs-os search <query>` (자연어/태그, 한국어는 빈 결과)
+  - `search_games(query)` → `gs-os search <query>` (자연어/태그, 한국어 포함, OR+Jaccard 랭킹)
   - `get_game(game_name)` → REST 캐시에서 game_id 조회 후 `gs-os get <id>`
   - `similar_games` → `gs-os similar <id>`
   - `portfolio_stats` → `gs-os stats`
