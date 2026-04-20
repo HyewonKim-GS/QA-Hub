@@ -432,37 +432,72 @@ async def api_search(q: str, sources: str = "all"):
     query = q.strip()
     loop = asyncio.get_event_loop()
 
-    # sources=jira는 카운트 전용 — 번역 불필요. 그 외엔 전체 쿼리 번역 후 양방향 검색.
+    # ── 게임 식별자 감지 ─────────────────────────────────────────────────────────
+    # 쿼리가 게임 코드(blt, bbp…)이면 → 게임 이름(Blazing Triplex…)도 함께 검색
+    # 쿼리가 게임 이름이면  → 역방향 게임 코드도 함께 검색 (Jira "[BLT/Dev]..." 커버)
+    _code_map: dict = CACHE.get("game_code_map", {})
+    _norm_q = query.strip().lower().replace(" & ", " and ").replace("&", "and")
+    _game_name_from_code: Optional[str] = _code_map.get(_norm_q)  # "blt" → "Blazing Triplex"
+    _game_code_from_name: Optional[str] = None
+    if not _game_name_from_code:
+        # 역방향: 이름 → 코드 (Jira에서 "[BLT/Dev]..." 매칭용)
+        for _c, _n in _code_map.items():
+            if _n.lower() == _norm_q:
+                _game_code_from_name = _c
+                break
+
+    # sources=jira는 카운트 전용 — GPT 번역 불필요. 그 외엔 전체 쿼리 GPT 번역 후 3방향 검색.
     tq: Optional[str] = None
     if sources != "jira":
         tq = await loop.run_in_executor(_executor, _gpt_translate_query, query)
 
-    def _merge_jira(q1: str, q2: Optional[str] = None) -> List[dict]:
-        results = search_jira_local(CACHE["jira"], q1)
-        if q2:
-            seen = {r["key"] for r in results}
-            results = results + [r for r in search_jira_local(CACHE["jira"], q2) if r["key"] not in seen]
+    def _merge_jira(*queries: str) -> List[dict]:
+        results, seen = [], set()
+        for _q in queries:
+            if _q:
+                for r in search_jira_local(CACHE["jira"], _q):
+                    if r["key"] not in seen:
+                        seen.add(r["key"])
+                        results.append(r)
         return results
 
-    def _merge_conf(q1: str, q2: Optional[str] = None) -> List[dict]:
-        results = search_confluence_local(CACHE["confluence"], q1)
-        if q2:
-            seen = {r.get("url", r.get("id", r.get("title", ""))) for r in results}
-            results = results + [
-                r for r in search_confluence_local(CACHE["confluence"], q2)
-                if r.get("url", r.get("id", r.get("title", ""))) not in seen
-            ]
+    def _merge_conf(*queries: str) -> List[dict]:
+        results, seen = [], set()
+        for _q in queries:
+            if _q:
+                for r in search_confluence_local(CACHE["confluence"], _q):
+                    uid = r.get("url", r.get("id", r.get("title", "")))
+                    if uid not in seen:
+                        seen.add(uid)
+                        results.append(r)
         return results
 
-    jira_results = _merge_jira(query, tq) if sources != "jira" else search_jira_local(CACHE["jira"], query)
+    def _merge_slack(*queries: str) -> List[dict]:
+        results, seen = [], set()
+        for _q in queries:
+            if _q:
+                for ch in search_slack_channels(_q):
+                    name = ch.get("name", "")
+                    if name not in seen:
+                        seen.add(name)
+                        results.append(ch)
+        return results
 
-    # sources=jira : Jira만 반환 (대시보드 이슈카운트용, Drive/MCP 없음)
+    # Jira: 원본 + GPT번역 + 게임이름(코드로 검색 시) + 게임코드(이름으로 검색 시)
+    # Confluence/Slack: 게임코드 검색 시 이름으로 대체해야 매칭됨
+    _jira_qs = [q for q in [query, tq, _game_name_from_code, _game_code_from_name] if q]
+    _conf_qs  = [q for q in [_game_name_from_code or query, tq] if q]
+    _slack_qs = [q for q in [_game_name_from_code or query, tq] if q]
+
+    jira_results = _merge_jira(*_jira_qs) if sources != "jira" else search_jira_local(CACHE["jira"], query)
+
+    # sources=jira : Jira만 반환 (대시보드 이슈카운트용)
     # sources=fast : Jira+Confluence+Slack 반환 (패널 1단계용, Drive/MCP 없음)
     if sources in ("jira", "fast"):
         def clean(item: dict) -> dict:
             return {k: v for k, v in item.items() if not k.startswith("_")}
-        conf = _merge_conf(query, tq) if sources == "fast" else []
-        slack = search_slack_channels(query) if sources == "fast" else []
+        conf = _merge_conf(*_conf_qs) if sources == "fast" else []
+        slack = _merge_slack(*_slack_qs) if sources == "fast" else []
         return JSONResponse({
             "jira": [clean(r) for r in jira_results],
             "confluence": [clean(r) for r in conf],
@@ -471,8 +506,8 @@ async def api_search(q: str, sources: str = "all"):
             "warnings": warnings,
         })
 
-    conf_results = _merge_conf(query, tq)
-    slack_results = search_slack_channels(query)
+    conf_results = _merge_conf(*_conf_qs)
+    slack_results = _merge_slack(*_slack_qs)
     # Drive 검색 + 온톨로지 병렬 실행
     def _ontology_drive_sources(q: str) -> List[dict]:
         sources = []

@@ -990,16 +990,27 @@ def _expand_word(word: str) -> List[str]:
 # ── Cache: 로컬 검색 ─────────────────────────────────────────────────────────
 
 def search_jira_local(items: List[Dict], query: str) -> List[Dict]:
-    """캐시에서 검색. 각 단어는 동의어 중 하나라도 텍스트에 포함되면 매칭."""
+    """캐시에서 검색. 각 단어는 동의어 중 하나라도 텍스트에 포함되면 매칭.
+    결과에 hit_fields=['title','desc'] 추가 — 어느 필드에서 매칭됐는지 표시."""
     tokens = _norm_ampersand(query.strip().lower()).split()
     if not tokens:
         return []
     word_groups = [_expand_word(t) for t in tokens]
     results = []
     for r in items:
-        text = _norm_ampersand(r.get("key","").lower() + " " + r["summary"].lower() + " " + r["_desc_full"])
-        if all(any(syn in text for syn in group) for group in word_groups):
-            results.append(r)
+        title_text = _norm_ampersand(r.get("key", "").lower() + " " + r["summary"].lower())
+        desc_text = r["_desc_full"]
+        combined = title_text + " " + desc_text
+        if not all(any(syn in combined for syn in group) for group in word_groups):
+            continue
+        hit_fields = []
+        if all(any(syn in title_text for syn in group) for group in word_groups):
+            hit_fields.append("title")
+        if all(any(syn in desc_text for syn in group) for group in word_groups):
+            hit_fields.append("desc")
+        result = dict(r)
+        result["hit_fields"] = hit_fields
+        results.append(result)
     return results
 
 
