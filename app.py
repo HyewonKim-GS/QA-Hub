@@ -39,6 +39,7 @@ from search import (
     call_mcp_tool,
     reset_mcp_session,
     _gpt_translate_query,
+    _load_learned_synonyms,
 )
 
 # ── Cache (L38~246) ───────────────────────────────────────────────────────────
@@ -264,8 +265,9 @@ async def _auto_refresh_loop() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # DB 초기화 (JSON 마이그레이션 포함) → 캐시 로드 → 자동 갱신 루프
+    # DB 초기화 (JSON 마이그레이션 포함) → 학습 동의어 로드 → 캐시 로드 → 자동 갱신 루프
     _init_db()
+    _load_learned_synonyms()
     asyncio.create_task(_load_cache())
     asyncio.create_task(_auto_refresh_loop())
     yield

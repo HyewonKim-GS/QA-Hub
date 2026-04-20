@@ -738,35 +738,113 @@ def drive_search_mcp(query: str, page_size: int = 20) -> List[Dict]:
 
 # ── 연관 검색: 동의어 맵 ───────────────────────────────────────────────────────
 # 각 단어와 동의어를 등록. 검색 시 원본 단어 대신 동의어 중 하나라도 텍스트에 있으면 매칭.
+# GPT로 학습된 신규 쌍은 synonyms_learned.json에 자동 저장되며 서버 재시작 시 로드됨.
+
+_SYNONYMS_LEARNED_PATH = os.path.join(os.path.dirname(__file__), "synonyms_learned.json")
+
+
+def _load_learned_synonyms() -> None:
+    """synonyms_learned.json → RELATED에 머지. 서버 시작 시 1회 호출."""
+    if not os.path.exists(_SYNONYMS_LEARNED_PATH):
+        return
+    try:
+        with open(_SYNONYMS_LEARNED_PATH, encoding="utf-8") as f:
+            learned: Dict[str, List[str]] = json.load(f)
+        for word, syns in learned.items():
+            existing = RELATED.setdefault(word, [])
+            for s in syns:
+                if s not in existing:
+                    existing.append(s)
+    except Exception:
+        pass
+
+
+def _save_learned_synonym(word: str, translation: str) -> None:
+    """GPT 번역 결과를 synonyms_learned.json에 영구 저장 (양방향)."""
+    try:
+        learned: Dict[str, List[str]] = {}
+        if os.path.exists(_SYNONYMS_LEARNED_PATH):
+            with open(_SYNONYMS_LEARNED_PATH, encoding="utf-8") as f:
+                learned = json.load(f)
+        for a, b in [(word, translation), (translation, word)]:
+            lst = learned.setdefault(a, [])
+            if b not in lst:
+                lst.append(b)
+            # RELATED에도 즉시 반영
+            rl = RELATED.setdefault(a, [])
+            if b not in rl:
+                rl.append(b)
+        with open(_SYNONYMS_LEARNED_PATH, "w", encoding="utf-8") as f:
+            json.dump(learned, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
 
 RELATED: Dict[str, List[str]] = {
-    "잭팟":       ["jackpot", "jp"],
-    "jackpot":    ["잭팟", "jp"],
-    "jp":         ["잭팟", "jackpot"],
-    "버그":       ["bug"],
-    "bug":        ["버그"],
-    "크래시":     ["crash"],
-    "crash":      ["크래시", "크래쉬"],
-    "정산":       ["payout", "settlement"],
-    "payout":     ["정산"],
-    "결제":       ["payment", "iap"],
-    "payment":    ["결제", "iap"],
-    "로그인":     ["login"],
-    "login":      ["로그인"],
-    "보너스":     ["bonus"],
-    "bonus":      ["보너스"],
-    "스핀":       ["spin"],
-    "spin":       ["스핀"],
-    "쿠도":       ["kudo", "kudos"],
-    "kudo":       ["쿠도", "kudos"],
-    "kudos":      ["쿠도", "kudo"],
-    "프리스핀":   ["free spin", "freespin"],
+    "잭팟":         ["jackpot", "jp"],
+    "jackpot":      ["잭팟", "jp"],
+    "jp":           ["잭팟", "jackpot"],
+    "버그":         ["bug"],
+    "bug":          ["버그"],
+    "크래시":       ["crash"],
+    "crash":        ["크래시", "크래쉬"],
+    "정산":         ["payout", "settlement"],
+    "payout":       ["정산"],
+    "결제":         ["payment", "iap"],
+    "payment":      ["결제", "iap"],
+    "로그인":       ["login"],
+    "login":        ["로그인"],
+    "보너스":       ["bonus"],
+    "bonus":        ["보너스"],
+    "스핀":         ["spin"],
+    "spin":         ["스핀"],
+    "쿠도":         ["kudo", "kudos"],
+    "kudo":         ["쿠도", "kudos"],
+    "kudos":        ["쿠도", "kudo"],
+    "프리스핀":     ["free spin", "freespin"],
+    "free spin":    ["프리스핀", "freespin"],
+    "freespin":     ["프리스핀", "free spin"],
     "멀티플라이어": ["multiplier"],
-    "multiplier": ["멀티플라이어"],
-    "성능":       ["performance", "fps", "lag"],
-    "performance": ["성능", "fps"],
-    "네트워크":   ["network"],
-    "network":    ["네트워크"],
+    "multiplier":   ["멀티플라이어"],
+    "성능":         ["performance", "fps", "lag"],
+    "performance":  ["성능", "fps"],
+    "네트워크":     ["network"],
+    "network":      ["네트워크"],
+    # 개발/QA 시각 효과 용어
+    "딤드":         ["dimmed", "딤됨"],
+    "딤됨":         ["dimmed", "딤드"],
+    "dimmed":       ["딤드", "딤됨"],
+    "와일드":       ["wild"],
+    "wild":         ["와일드"],
+    "스캐터":       ["scatter"],
+    "scatter":      ["스캐터"],
+    "릴":           ["reel"],
+    "reel":         ["릴"],
+    "페이라인":     ["payline"],
+    "payline":      ["페이라인"],
+    "리스핀":       ["respin", "re-spin", "re spin"],
+    "respin":       ["리스핀"],
+    "심볼":         ["symbol"],
+    "symbol":       ["심볼"],
+    "애니메이션":   ["animation", "anim"],
+    "animation":    ["애니메이션"],
+    "팝업":         ["popup", "pop-up"],
+    "popup":        ["팝업"],
+    "배경":         ["background", "bg"],
+    "background":   ["배경", "bg"],
+    "사운드":       ["sound", "audio"],
+    "sound":        ["사운드", "오디오"],
+    "오디오":       ["audio", "sound"],
+    "audio":        ["오디오", "사운드"],
+    "ui":           ["유아이", "인터페이스"],
+    "버튼":         ["button"],
+    "button":       ["버튼"],
+    "텍스트":       ["text"],
+    "text":         ["텍스트"],
+    "폰트":         ["font"],
+    "font":         ["폰트"],
+    "레이아웃":     ["layout"],
+    "layout":       ["레이아웃"],
 }
 
 
@@ -806,9 +884,9 @@ def _gpt_translate(word: str) -> Optional[str]:
         raw = resp.choices[0].message.content.strip().strip('"\'').lower()
         result = None if raw in ("null", "none", "", word.lower()) else raw
         _TRANS_CACHE[word] = result
-        # 역방향 캐시도 저장
         if result:
             _TRANS_CACHE[result] = word
+            _save_learned_synonym(word, result)  # 파일에 영구 저장
         return result
     except Exception:
         _TRANS_CACHE[word] = None
