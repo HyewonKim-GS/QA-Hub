@@ -475,8 +475,10 @@ async def api_search(q: str, sources: str = "all"):
     def _ontology_drive_sources(q: str) -> List[dict]:
         sources = []
         seen_ids: set = set()
+        found_game_names: List[str] = []  # CTD 폴백용
 
         def _add_game_sources(game_name: str):
+            found_game_names.append(game_name)
             try:
                 raw = call_mcp_tool("get_game", {"game_name": game_name})
                 if not raw:
@@ -485,29 +487,54 @@ async def api_search(q: str, sources: str = "all"):
                 if not game_data or game_data.get("error"):
                     return
                 srcs = game_data.get("sources", {})
-                qa = srcs.get("qa")
-                if qa and qa.get("drive_id") and qa["drive_id"] not in seen_ids:
-                    seen_ids.add(qa["drive_id"])
-                    sources.append({
-                        "id": qa["drive_id"],
-                        "title": qa.get("doc_name", "QA 문서"),
-                        "mime_label": "QA 시트",
-                        "url": f"https://docs.google.com/spreadsheets/d/{qa['drive_id']}",
-                        "from_ontology": True,
-                    })
-                design = srcs.get("design_doc")
-                if design and design.get("drive_id") and design["drive_id"] not in seen_ids:
-                    seen_ids.add(design["drive_id"])
-                    folder_name = design.get("folder_name") or game_data.get("game_name") or "기획 문서"
-                    sources.append({
-                        "id": design["drive_id"],
-                        "title": folder_name,
-                        "mime_label": "기획 폴더",
-                        "url": f"https://drive.google.com/drive/folders/{design['drive_id']}",
-                        "from_ontology": True,
-                    })
+
+                # GS OS sources에서 drive_id 있는 모든 항목 포함
+                _src_map = [
+                    ("qa",          "QA 시트",   "spreadsheets"),
+                    ("design_doc",  "기획 폴더", "folders"),
+                    ("math_model",  "MATH 폴더", "folders"),
+                ]
+                for src_key, label, drive_type in _src_map:
+                    src = srcs.get(src_key)
+                    if src and src.get("drive_id") and src["drive_id"] not in seen_ids:
+                        seen_ids.add(src["drive_id"])
+                        title = src.get("folder_name") or src.get("doc_name") or game_data.get("game_name") or label
+                        base = "spreadsheets" if drive_type == "spreadsheets" else "drive/folders"
+                        url = f"https://docs.google.com/{base}/d/{src['drive_id']}" if drive_type == "spreadsheets" \
+                              else f"https://drive.google.com/drive/folders/{src['drive_id']}"
+                        sources.append({"id": src["drive_id"], "title": title, "mime_label": label, "url": url, "from_ontology": True})
             except Exception:
                 pass
+
+        def _norm_for_ctd(s: str) -> str:
+            s = s.lower().replace("\u2019", "").replace("\u2018", "").replace("'", "")
+            s = s.replace("-", " ").replace("_", " ").replace(" & ", " and ").replace("&", "and")
+            return " ".join(s.split())
+
+        def _add_ctd(game_name: str, tc_prefix: str = ""):
+            """CTD 시트 링크를 Drive 결과에 추가."""
+            ctd_info = CACHE.get("ctd_game_info", [])
+            norm_name = _norm_for_ctd(game_name)
+            tc_lower = tc_prefix.lower()
+            for row in ctd_info:
+                matched = _norm_for_ctd(row["game_name"]) == norm_name
+                if not matched and tc_lower and tc_lower in row["game_title"].lower():
+                    matched = True
+                if matched:
+                    ctd_id = f"ctd_{row['row_num']}"
+                    if ctd_id not in seen_ids:
+                        seen_ids.add(ctd_id)
+                        sources.append({
+                            "id": ctd_id,
+                            "title": f"{row['game_name']} CTD",
+                            "mime_label": "CTD",
+                            "url": (
+                                f"https://docs.google.com/spreadsheets/d/{_CONTENTS_SHEET_ID}"
+                                f"/edit#gid={_CTD_GAME_INFO_GID}&range=B{row['row_num']}"
+                            ),
+                            "from_ontology": True,
+                        })
+                    break
 
         def _norm(s: str) -> str:
             """& ↔ and, _ → 공백, 아포스트로피 → 공백 정규화 (SB_게임명, Luck'n'Roll 대응)."""
@@ -519,7 +546,8 @@ async def api_search(q: str, sources: str = "all"):
         exact_code = CACHE["game_code_map"].get(token)
         if exact_code:
             _add_game_sources(exact_code)
-            return sources  # 코드 매칭이면 하나만 반환
+            _add_ctd(exact_code, tc_prefix=token)
+            return sources
 
         # 2. game_code_map에서 쿼리가 게임명에 포함되는 게임 부분 매칭 (최대 4개)
         tokens = token.split()
@@ -531,13 +559,27 @@ async def api_search(q: str, sources: str = "all"):
         matched_names.sort(key=lambda n: (0 if _norm(n.lower()).startswith(token) else 1, n))
         for name in matched_names[:4]:
             _add_game_sources(name)
+            _add_ctd(name)
 
         return sources
 
-    drive_results, ontology_drive = await asyncio.gather(
-        loop.run_in_executor(_executor, drive_search_mcp, query),
-        loop.run_in_executor(_executor, _ontology_drive_sources, query),
-    )
+    # 게임 코드로 검색 시 Drive는 풀네임으로 검색해야 파일이 나옴 (e.g. "blt" → "Blazing Triplex")
+    _norm_q = query.strip().lower().replace(" & ", " and ").replace("&", "and")
+    _drive_game_name = CACHE.get("game_code_map", {}).get(_norm_q)
+    drive_query = _drive_game_name if _drive_game_name else query
+
+    if _drive_game_name:
+        # 게임 코드 → 풀네임 Drive 검색 + 온톨로지 병렬
+        drive_results, ontology_drive = await asyncio.gather(
+            loop.run_in_executor(_executor, drive_search_mcp, drive_query),
+            loop.run_in_executor(_executor, _ontology_drive_sources, query),
+        )
+    else:
+        drive_results, ontology_drive = await asyncio.gather(
+            loop.run_in_executor(_executor, drive_search_mcp, query),
+            loop.run_in_executor(_executor, _ontology_drive_sources, query),
+        )
+
     # 온톨로지 결과가 있으면 맨 앞에, Drive 검색 결과에서 중복 ID 제거
     if ontology_drive:
         ontology_ids = {s["id"] for s in ontology_drive}
