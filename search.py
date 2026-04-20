@@ -621,7 +621,7 @@ def call_mcp_tool(tool_name: str, arguments: dict) -> Optional[str]:
                     data = json.loads(raw)
                     games = data.get("data", [])
                     return json.dumps({"results": games})
-                # CLI 검색 실패(한국어 등) → 빈 결과 (호출측에서 캐시 목록과 병합)
+                # CLI 검색 실패 → 빈 결과 (호출측에서 캐시 목록과 병합)
                 return json.dumps({"results": []})
             # 쿼리 없으면 전체 목록 반환
             games = _get_gs_os_games()
@@ -812,6 +812,36 @@ def _gpt_translate(word: str) -> Optional[str]:
         return result
     except Exception:
         _TRANS_CACHE[word] = None
+        return None
+
+
+def _gpt_translate_query(query: str) -> Optional[str]:
+    """전체 검색 쿼리를 영↔한 번역 (구문 단위). 단어별 번역보다 정확한 한↔영 교차 검색용."""
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    if not api_key or not query.strip():
+        return None
+    cache_key = f"__q__{query.strip().lower()}"
+    if cache_key in _TRANS_CACHE:
+        return _TRANS_CACHE[cache_key]
+    try:
+        import openai
+        client = openai.OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": (
+                f"슬롯 게임 QA 팀 Jira/Confluence 검색 쿼리야: '{query}'\n"
+                f"반대 언어(한→영, 영→한)로 번역해. 게임·QA 현장에서 실제 쓰는 용어로.\n"
+                f"번역어만 짧게 반환. 번역 불필요(이미 두 언어 혼용)하거나 고유명사면 null."
+            )}],
+            max_tokens=30,
+            temperature=0,
+        )
+        raw = resp.choices[0].message.content.strip().strip('"\'').lower()
+        result = None if raw in ("null", "none", "", query.strip().lower()) else raw
+        _TRANS_CACHE[cache_key] = result
+        return result
+    except Exception:
+        _TRANS_CACHE[cache_key] = None
         return None
 
 

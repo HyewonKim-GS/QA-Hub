@@ -38,6 +38,7 @@ from search import (
     fetch_live_issues,
     call_mcp_tool,
     reset_mcp_session,
+    _gpt_translate_query,
 )
 
 # ── Cache (L38~246) ───────────────────────────────────────────────────────────
@@ -427,14 +428,36 @@ async def api_search(q: str, sources: str = "all"):
     query = q.strip()
     loop = asyncio.get_event_loop()
 
-    jira_results = search_jira_local(CACHE["jira"], query)
+    # sources=jira는 카운트 전용 — 번역 불필요. 그 외엔 전체 쿼리 번역 후 양방향 검색.
+    tq: Optional[str] = None
+    if sources != "jira":
+        tq = await loop.run_in_executor(_executor, _gpt_translate_query, query)
+
+    def _merge_jira(q1: str, q2: Optional[str] = None) -> List[dict]:
+        results = search_jira_local(CACHE["jira"], q1)
+        if q2:
+            seen = {r["key"] for r in results}
+            results = results + [r for r in search_jira_local(CACHE["jira"], q2) if r["key"] not in seen]
+        return results
+
+    def _merge_conf(q1: str, q2: Optional[str] = None) -> List[dict]:
+        results = search_confluence_local(CACHE["confluence"], q1)
+        if q2:
+            seen = {r.get("url", r.get("id", r.get("title", ""))) for r in results}
+            results = results + [
+                r for r in search_confluence_local(CACHE["confluence"], q2)
+                if r.get("url", r.get("id", r.get("title", ""))) not in seen
+            ]
+        return results
+
+    jira_results = _merge_jira(query, tq) if sources != "jira" else search_jira_local(CACHE["jira"], query)
 
     # sources=jira : Jira만 반환 (대시보드 이슈카운트용, Drive/MCP 없음)
     # sources=fast : Jira+Confluence+Slack 반환 (패널 1단계용, Drive/MCP 없음)
     if sources in ("jira", "fast"):
         def clean(item: dict) -> dict:
             return {k: v for k, v in item.items() if not k.startswith("_")}
-        conf = search_confluence_local(CACHE["confluence"], query) if sources == "fast" else []
+        conf = _merge_conf(query, tq) if sources == "fast" else []
         slack = search_slack_channels(query) if sources == "fast" else []
         return JSONResponse({
             "jira": [clean(r) for r in jira_results],
@@ -444,7 +467,7 @@ async def api_search(q: str, sources: str = "all"):
             "warnings": warnings,
         })
 
-    conf_results = search_confluence_local(CACHE["confluence"], query)
+    conf_results = _merge_conf(query, tq)
     slack_results = search_slack_channels(query)
     # Drive 검색 + 온톨로지 병렬 실행
     def _ontology_drive_sources(q: str) -> List[dict]:
