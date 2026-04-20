@@ -519,22 +519,70 @@ SLACK_CHANNELS: List[Dict] = [
     {"name": "tf-golden-drums",                "id": "C031JDM0CR3", "archived": True},
 ]
 
-# 채널 이름에서 검색 텍스트 생성 (하이픈을 공백으로)
+# 채널 이름에서 검색 텍스트 생성 (하이픈을 공백으로) — static fallback용
 for _ch in SLACK_CHANNELS:
     _ch["_search_text"] = _ch["name"].replace("-", " ").replace("_", " ").lower()
     _ch["url"] = f"https://{SLACK_WORKSPACE}.slack.com/archives/{_ch['id']}"
 
+# Slack API 동적 채널 캐시
+_dynamic_slack_channels: Optional[List[Dict]] = None
+
+
+def load_slack_channels() -> None:
+    """Slack API conversations.list로 tf-gs-* 채널 전체 조회 후 캐시.
+    서버 시작 시 1회 호출. 실패 시 static SLACK_CHANNELS fallback 유지."""
+    global _dynamic_slack_channels
+    token = os.environ.get("SLACK_BOT_TOKEN", "")
+    if not token:
+        return
+    try:
+        channels: List[Dict] = []
+        cursor: Optional[str] = None
+        while True:
+            params: dict = {"types": "public_channel", "limit": 200, "exclude_archived": "false"}
+            if cursor:
+                params["cursor"] = cursor
+            resp = requests.get(
+                "https://slack.com/api/conversations.list",
+                headers={"Authorization": f"Bearer {token}"},
+                params=params,
+                timeout=15,
+            )
+            data = resp.json()
+            if not data.get("ok"):
+                print(f"[Slack] conversations.list 실패: {data.get('error')}")
+                return
+            for ch in data.get("channels", []):
+                name = ch.get("name", "")
+                if not name.startswith("tf-gs-") and not name.startswith("tf-"):
+                    continue  # 게임 채널만 유지
+                channels.append({
+                    "name": name,
+                    "id": ch["id"],
+                    "archived": ch.get("is_archived", False),
+                    "_search_text": name.replace("-", " ").replace("_", " ").lower(),
+                    "url": f"https://{SLACK_WORKSPACE}.slack.com/archives/{ch['id']}",
+                })
+            cursor = data.get("response_metadata", {}).get("next_cursor") or ""
+            if not cursor:
+                break
+        if channels:
+            _dynamic_slack_channels = channels
+            print(f"[Slack] 채널 동적 로드 완료 — {len(channels)}개 (tf- 채널)")
+    except Exception as e:
+        print(f"[Slack] 채널 로드 오류: {e}")
+
 
 def search_slack_channels(query: str) -> List[Dict]:
-    """채널 이름에서 로컬 검색."""
-    # 언더스코어·아포스트로피를 공백으로 치환 후 토크나이징 (SB_게임명, Luck'n'Roll 대응)
+    """채널 이름에서 로컬 검색. 동적 캐시 우선, 없으면 static fallback."""
+    channels = _dynamic_slack_channels if _dynamic_slack_channels is not None else SLACK_CHANNELS
     normalized = _norm_ampersand(query.strip().lower()).replace("_", " ").replace("'", " ").replace("'", " ")
     tokens = [t for t in normalized.split() if t]
     if not tokens:
         return []
     word_groups = [_expand_word(t) for t in tokens]
     results = []
-    for ch in SLACK_CHANNELS:
+    for ch in channels:
         text = ch["_search_text"]
         if all(any(syn in text for syn in group) for group in word_groups):
             results.append({k: v for k, v in ch.items() if not k.startswith("_")})

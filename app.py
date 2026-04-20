@@ -40,6 +40,7 @@ from search import (
     reset_mcp_session,
     _gpt_translate_query,
     _load_learned_synonyms,
+    load_slack_channels,
 )
 
 # ── Cache (L38~246) ───────────────────────────────────────────────────────────
@@ -269,6 +270,7 @@ async def lifespan(app: FastAPI):
     _init_db()
     _load_learned_synonyms()
     asyncio.create_task(_load_cache())
+    asyncio.get_running_loop().run_in_executor(None, load_slack_channels)
     asyncio.create_task(_auto_refresh_loop())
     yield
 
