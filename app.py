@@ -584,6 +584,25 @@ async def api_search(q: str, sources: str = "all"):
         if exact_code:
             _add_game_sources(exact_code)
             _add_ctd(exact_code, tc_prefix=token)
+            # GS OS에 SB 변형이 등록된 경우 포함
+            _add_game_sources(exact_code + " SB")
+            _add_ctd(exact_code + " SB")
+            # GS OS에 없는 SB QA 시트: Drive에서 직접 검색 (게임명 단어 + "SB" 조건)
+            _sb_words = [w for w in re.split(r"[^a-zA-Z0-9가-힣]", exact_code) if len(w) > 3][:2]
+            if _sb_words:
+                try:
+                    for _sid, _sname in _drive_search_sheet(_sb_words + ["SB"], return_name=True):
+                        if _sid and _sid not in seen_ids:
+                            seen_ids.add(_sid)
+                            sources.append({
+                                "id": _sid,
+                                "title": _sname or f"{exact_code} SB",
+                                "mime_label": "QA 시트 (SB)",
+                                "url": f"https://docs.google.com/spreadsheets/d/{_sid}",
+                                "from_ontology": True,
+                            })
+                except Exception:
+                    pass
             return sources
 
         # 2. game_code_map에서 쿼리가 게임명에 포함되는 게임 부분 매칭 (최대 4개)
@@ -1587,8 +1606,11 @@ async def api_game_studio(name: str = "", tc_prefix: str = "", game_id: str = ""
     return JSONResponse({})
 
 
-def _drive_search_sheet(keywords: List[str]) -> Optional[str]:
-    """GWS CLI로 공유 드라이브에서 스프레드시트 검색, 첫 번째 결과 ID 반환."""
+def _drive_search_sheet(keywords: List[str], return_name: bool = False):
+    """GWS CLI로 공유 드라이브에서 스프레드시트 검색.
+    return_name=False(기본): 첫 번째 결과 ID(str) 반환.
+    return_name=True: [(id, name), ...] 전체 목록 반환.
+    """
     q_parts = [f"name contains '{kw}'" for kw in keywords]
     q_parts.append("mimeType='application/vnd.google-apps.spreadsheet'")
     q = " and ".join(q_parts)
@@ -1606,9 +1628,11 @@ def _drive_search_sheet(keywords: List[str]) -> Optional[str]:
         )
         data = json.loads(result.stdout[result.stdout.find("{"):])
         files = data.get("files", [])
+        if return_name:
+            return [(f["id"], f.get("name", "")) for f in files]
         return files[0]["id"] if files else None
     except Exception:
-        return None
+        return [] if return_name else None
 
 
 def _autofill_sheet_id(entry: dict) -> None:
