@@ -95,6 +95,12 @@
             <div class="notif-tab off" data-tab="schedule" onclick="notifSetTab('schedule',this)" data-i18n="notif.schedule" data-i18n-ko="일정">일정</div>
             <div class="notif-tab off" data-tab="status" onclick="notifSetTab('status',this)" data-i18n="notif.status" data-i18n-ko="상태">상태</div>
           </div>
+          <div id="notif-push-prompt" style="display:none;padding:8px 12px 8px 14px;background:rgba(79,142,247,.07);border-bottom:1px solid var(--bd);align-items:center;gap:8px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span style="font-size:11px;color:var(--t2);flex:1">탭을 벗어나도 알림을 받을 수 있어요</span>
+            <button onclick="notifRequestPermission()" style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:none;background:var(--acc);color:#fff;cursor:pointer;white-space:nowrap">허용</button>
+            <button onclick="notifDismissPrompt()" style="font-size:10px;padding:3px 6px;border-radius:20px;border:none;background:transparent;color:var(--t3);cursor:pointer">✕</button>
+          </div>
           <div id="notif-drop-list"></div>
           <div class="notif-drop-footer"><span onclick="notifOpenSidebar()" data-i18n="notif.viewAll" data-i18n-ko="전체 알림 보기 →">전체 알림 보기 →</span></div>
         </div>
@@ -1088,6 +1094,7 @@ let _srData={};
 let _srFilter='all';
 let _srBugOnly=false;
 let _confSpace='all';
+let _srQ='';
 
 function showSearchResults(q){
   _srPrevPage=document.querySelector('.page.active')?.id.replace('page-','')||'dashboard';
@@ -1137,6 +1144,7 @@ function confSetSpace(space){
 
 function _renderSR(q,data){
   _srData=data;
+  _srQ=q;
   _srFilter='all';
   _srBugOnly=false;
   // 연결 오류 경고 배너
@@ -1164,6 +1172,25 @@ function _renderSR(q,data){
 
 function _drawSR(){
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  // 매칭 키워드 하이라이트 — 쿼리 토큰을 text에서 찾아 <mark> 처리
+  function hlText(text,markCls){
+    if(!text||!_srQ) return esc(text);
+    const tokens=_srQ.trim().split(/\s+/).filter(t=>t.length>0);
+    if(!tokens.length) return esc(text);
+    const rxParts=tokens.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+    const rx=new RegExp('('+rxParts.join('|')+')', 'gi');
+    const segs=text.split(rx);
+    return segs.map((s,i)=>i%2===1?`<mark class="${markCls}">${esc(s)}</mark>`:esc(s)).join('');
+  }
+  // hit_fields → 배지 HTML
+  function hitBadge(fields){
+    if(!fields||!fields.length) return '';
+    const inTitle=fields.includes('title'), inDesc=fields.includes('desc');
+    if(inTitle&&inDesc) return `<span class="hit-badge both">${_tl('제목+설명','Title+Desc')}</span>`;
+    if(inTitle) return `<span class="hit-badge ttl">${_tl('제목 일치','Title')}</span>`;
+    if(inDesc)  return `<span class="hit-badge dsc">${_tl('설명 일치','Desc')}</span>`;
+    return '';
+  }
   function initials(name){
     if(!name||name==='Unassigned') return 'UN';
     const p=name.trim().split(/\s+/);
@@ -1238,10 +1265,12 @@ function _drawSR(){
         const assignee=r.assignee||'Unassigned';
         const init=initials(assignee);
         const desc=(r.description||'').trim();
+        const fields=r.hit_fields||[];
+        const inTitle=fields.includes('title'), inDesc=fields.includes('desc');
         html+=`<a class="sr-card" href="${esc(r.url||'#')}" target="_blank">
-          <div class="jc-top"><span class="jc-key">${esc(r.key||'')}</span>${typeBadge(r.type)}${statusBadge(r.status)}</div>
-          <div class="jc-title">${esc(r.summary||r.title||'')}</div>
-          ${desc?`<div class="jc-desc">${esc(desc)}</div>`:''}
+          <div class="jc-top"><span class="jc-key">${esc(r.key||'')}</span>${typeBadge(r.type)}${statusBadge(r.status)}${hitBadge(fields)}</div>
+          <div class="jc-title">${inTitle?hlText(r.summary||r.title||'','jc-hl-t'):esc(r.summary||r.title||'')}</div>
+          ${desc?`<div class="jc-desc">${inDesc?hlText(desc,'jc-hl-d'):esc(desc)}</div>`:''}
           <div class="jc-foot">
             <div class="jc-av">${esc(init)}</div>
             <span class="jc-aname">${esc(assignee)}</span>
@@ -2321,7 +2350,7 @@ function _giStCat(st){
   if(s.includes('done')||s.includes('완료')||s.includes('closed'))return'완료';
   if(s.includes('review'))return'검토중';
   if(s.includes('progress')||s==='진행 중'||s==='진행중')return'진행중';
-  if(s.includes('reopen')||s.includes('리오픈'))return'리오픈';
+  if(s.includes('reopen')||s.includes('리오픈')||s.includes('다시 열림')||s.includes('다시열림'))return'리오픈';
   return'미해결';
 }
 
@@ -2854,7 +2883,7 @@ async function _giRenderCard(entry){
         if(s.includes('done')||s.includes('완료')||s.includes('closed'))return'완료';
         if(s.includes('review'))return'검토중';
         if(s.includes('progress')||s==='진행 중'||s==='진행중')return'진행중';
-        if(s.includes('reopen')||s.includes('리오픈'))return'리오픈';
+        if(s.includes('reopen')||s.includes('리오픈')||s.includes('다시 열림')||s.includes('다시열림'))return'리오픈';
         return'미해결';
       }
       function stBadge(st){
@@ -3269,6 +3298,14 @@ function _notifRefreshBadge(){
 }
 
 function _notifRenderDrop(){
+  // 푸시 허용 프롬프트: permission이 default이고 dismissed 안 한 경우만 표시
+  const prompt=document.getElementById('notif-push-prompt');
+  if(prompt){
+    const showPrompt='Notification' in window
+      && Notification.permission==='default'
+      && !_notifPromptDismissed;
+    prompt.style.display=showPrompt?'flex':'none';
+  }
   const list=document.getElementById('notif-drop-list');
   if(!list)return;
   const items=_notifFiltered(_notifTab).slice(0,4);
@@ -3287,6 +3324,20 @@ function _notifRenderSb(){
 async function _notifDetect(){
   try{
     _NOTIF_DATA=await fetch('/api/notifications?user_id='+encodeURIComponent(_getMyUserId())).then(r=>r.json());
+
+    if(!_notifInitialized){
+      // 첫 로드: 현재 ID 전부 기존으로 간주 (페이지 열자마자 중복 발사 방지)
+      _NOTIF_DATA.forEach(n=>_notifKnownIds.add(n.id));
+      _notifInitialized=true;
+    } else {
+      // 이후 폴링: 새로 추가된 unread 항목만 브라우저 알림
+      if('Notification' in window && Notification.permission==='granted'){
+        _NOTIF_DATA.filter(n=>!_notifKnownIds.has(n.id)&&!n.read)
+                   .forEach(n=>{ _notifKnownIds.add(n.id); _showBrowserNotif(n); });
+      }
+      _NOTIF_DATA.forEach(n=>_notifKnownIds.add(n.id));
+    }
+
     _notifRefreshBadge();
     _notifRenderDrop();
     if(document.getElementById('notif-sidebar').classList.contains('open'))_notifRenderSb();
@@ -3356,6 +3407,51 @@ document.addEventListener('click',function(e){
     drop.style.display='none';
   }
 });
+
+// ── 브라우저 Push 알림 ──
+let _notifKnownIds = new Set();
+let _notifInitialized = false;
+let _notifPromptDismissed = !!localStorage.getItem('qa_push_dismissed');
+let _swReg = null;  // serviceWorker registration 캐시
+
+// Service Worker 등록
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/static/sw.js')
+    .then(reg => { _swReg = reg; })
+    .catch(()=>{});
+}
+
+async function _showBrowserNotif(n){
+  const title = n.game || 'QA Hub';
+  const parts = [];
+  if(n.badge && n.badge.text) parts.push(n.badge.text);
+  if(n.sub) parts.push(n.sub);
+  const body = parts.join(' — ');
+  try{
+    const reg = _swReg || await navigator.serviceWorker.ready;
+    reg.showNotification(title, {body, tag: n.id, renotify: false});
+  } catch(e){
+    try{ new Notification(title, {body, tag: n.id}); }catch(_){}
+  }
+}
+
+async function notifRequestPermission(){
+  if(!('Notification' in window)) return;
+  const result = await Notification.requestPermission();
+  const prompt = document.getElementById('notif-push-prompt');
+  if(prompt) prompt.style.display = 'none';
+  if(result === 'granted'){
+    // 허용 직후: 현재 알림 전부 기존으로 마킹 (즉시 중복 발사 방지)
+    _NOTIF_DATA.forEach(n => _notifKnownIds.add(n.id));
+  }
+}
+
+function notifDismissPrompt(){
+  localStorage.setItem('qa_push_dismissed','1');
+  _notifPromptDismissed = true;
+  const prompt = document.getElementById('notif-push-prompt');
+  if(prompt) prompt.style.display = 'none';
+}
 
 // 초기 실행 + 60초 폴링
 _notifRefreshBadge();
