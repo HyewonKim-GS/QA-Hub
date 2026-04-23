@@ -918,7 +918,7 @@ def _gpt_translate(word: str) -> Optional[str]:
         return _TRANS_CACHE[word]
     try:
         import openai
-        client = openai.OpenAI(api_key=api_key)
+        client = openai.OpenAI(api_key=api_key, base_url=os.environ.get("AIPROXY_BASE_URL") or None)
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{
@@ -955,7 +955,7 @@ def _gpt_translate_query(query: str) -> Optional[str]:
         return _TRANS_CACHE[cache_key]
     try:
         import openai
-        client = openai.OpenAI(api_key=api_key)
+        client = openai.OpenAI(api_key=api_key, base_url=os.environ.get("AIPROXY_BASE_URL") or None)
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": (

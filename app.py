@@ -2291,7 +2291,7 @@ def _classify_intent_gpt(message: str) -> dict:
                  for g in CACHE["game_list"] if g.get("game_name")]
         game_list_ctx = "\n게임 목록 (정확한 영문 게임명|코드):\n" + ", ".join(names[:400])
     try:
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), base_url=os.environ.get("AIPROXY_BASE_URL") or None)
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": (
@@ -2404,7 +2404,7 @@ def _process_chat(message: str, history: List[dict], _return_prepared: bool = Fa
     import os
     from openai import OpenAI
 
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), base_url=os.environ.get("AIPROXY_BASE_URL") or None)
 
     # ── 0. GPT 의도 분류 백그라운드 시작 (데이터 수집과 병렬) ──
     _intent_pool = ThreadPoolExecutor(max_workers=1)
@@ -3010,10 +3010,24 @@ def _process_chat(message: str, history: List[dict], _return_prepared: bool = Fa
             game_id_str = str(gd.get("game_id", ""))
             is_sb_val = "1" if gd.get("game_type", "").lower() == "super bonus" else "0"
             _gl_key = (gname, tc_prefix, game_id_str, is_sb_val)
-            # 캐시 히트 시만 사용 (Drive 검색은 느려서 채팅에서 직접 호출 안 함)
-            if _gl_key not in _GL_CACHE:
-                return ""
-            cached_links, _ = _GL_CACHE[_gl_key]
+            if _gl_key in _GL_CACHE:
+                cached_links, _ = _GL_CACHE[_gl_key]
+            else:
+                # 캐시 미스 → 직접 Drive 검색 호출
+                import urllib.request, urllib.parse
+                params = urllib.parse.urlencode({
+                    "name": gname,
+                    "tc_prefix": tc_prefix,
+                    "game_id": game_id_str,
+                    "is_sb": is_sb_val,
+                })
+                try:
+                    with urllib.request.urlopen(
+                        f"http://localhost:8000/api/game_links?{params}", timeout=8
+                    ) as resp:
+                        cached_links = json.loads(resp.read())
+                except Exception:
+                    return ""
             lines = []
             if cached_links.get("gdd"):
                 lines.append(f"GDD: {cached_links['gdd']}")
@@ -3094,7 +3108,7 @@ def _process_chat(message: str, history: List[dict], _return_prepared: bool = Fa
             except Exception:
                 pass
             try:
-                game_links_ctx = _glinks_f.result(timeout=3)
+                game_links_ctx = _glinks_f.result(timeout=10)
             except Exception:
                 pass
     except Exception:
@@ -3341,7 +3355,8 @@ def _process_chat(message: str, history: List[dict], _return_prepared: bool = Fa
         "- **태그 필터 + 이슈**: 특정 장르/태그 게임의 이슈를 물으면, 해당 게임들에서 발생한 Bug 티켓을 우선 정리해 보여주세요.\n"
         "- **데이터 없음**: 해당 소스에 데이터가 없으면 '데이터가 없다'고 솔직하게 말하고, 대신 찾을 수 있는 방법을 안내하세요.\n"
         "- **이전 대화 맥락**: 이전에 언급된 게임명·이슈·주제를 반드시 기억해 연속 질문에 자연스럽게 답하세요.\n"
-        "- **언어**: 항상 한국어로 답변하세요. 기술 용어(game_type, status 값 등)는 영어 원문 그대로 표기해도 됩니다.\n\n"
+        "- **언어**: 항상 한국어로 답변하세요. 기술 용어(game_type, status 값 등)는 영어 원문 그대로 표기해도 됩니다.\n"
+        "- **일반 질문**: QA 데이터와 무관한 질문(번역, 코드 작성, 개념 설명 등)도 자연스럽게 답변하세요. QA 데이터 조회는 플러스 알파 기능입니다.\n\n"
 
         f"[검색된 데이터]\n{context}"
     )
@@ -3438,7 +3453,7 @@ async def api_chat_stream(req: ChatRequest):
 
         # 2. GPT 스트리밍 호출
         from openai import OpenAI
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), base_url=os.environ.get("AIPROXY_BASE_URL") or None)
         full_answer = ""
         try:
             stream = client.chat.completions.create(
