@@ -243,10 +243,10 @@ async def _load_cache() -> None:
         CACHE["ctd_game_info"]  = ctd_info
         print(f"[Cache] 문서 탭 캐시 완료 — Sound {len(sound_tabs)}탭 / 연출 {len(direction_tabs)}탭 / CTD {len(ctd_info)}행")
 
-    async def _detect_notifs():
-        await loop.run_in_executor(_executor, _detect_schedule_notifications)
-
-    await asyncio.gather(_fetch_jira(), _fetch_confluence(), _fetch_game_codes(), _fetch_doc_tabs(), _detect_notifs())
+    await asyncio.gather(_fetch_jira(), _fetch_confluence(), _fetch_game_codes(), _fetch_doc_tabs())
+    # Jira 캐시 로드 완료 후 알림 감지
+    await loop.run_in_executor(_executor, _detect_schedule_notifications)
+    await loop.run_in_executor(_executor, _detect_critical_bug_notifications)
     CACHE["last_updated"] = datetime.now()
     errs = [k for k in ("jira_error", "confluence_error", "mcp_error") if CACHE.get(k)]
     if errs:
@@ -891,6 +891,7 @@ CREATE TABLE IF NOT EXISTS schedules (
     assignee      TEXT NOT NULL DEFAULT '',
     qa_start      TEXT NOT NULL DEFAULT '',
     qa_end        TEXT NOT NULL DEFAULT '',
+    tc_start      TEXT DEFAULT '',
     tc_end        TEXT DEFAULT '',
     status        TEXT DEFAULT 'active',
     memo          TEXT DEFAULT '',
@@ -930,6 +931,13 @@ def _init_db() -> None:
         conn = _get_db()
         conn.executescript(_DB_SCHEMA)
         conn.commit()
+
+        # tc_start 컬럼 마이그레이션 (기존 DB 대응)
+        try:
+            conn.execute("ALTER TABLE schedules ADD COLUMN tc_start TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass  # 이미 존재하는 경우
 
         # schedule.json → schedules 테이블
         sched_json = Path(__file__).parent / "schedule.json"
@@ -1099,6 +1107,35 @@ def _detect_schedule_notifications() -> None:
         print(f"[Notif] 스케줄 알림 감지 오류: {ex}")
 
 
+_CRITICAL_PRIORITIES = {"주요", "중요", "Highest", "highest", "Critical", "critical"}
+_CLOSED_STATUSES = {"완료", "done", "closed", "resolved", "취소", "cancelled", "duplicate"}
+
+def _detect_critical_bug_notifications() -> None:
+    """새 Critical Bug 이슈 알림 생성 (캐시 갱신 시 호출). INSERT OR IGNORE로 이슈당 1회만."""
+    try:
+        issues = CACHE.get("jira", [])
+        for issue in issues:
+            if issue.get("type", "").lower() not in ("bug", "버그"):
+                continue
+            if issue.get("priority", "") not in _CRITICAL_PRIORITIES:
+                continue
+            status = issue.get("status", "").lower()
+            if any(s in status for s in _CLOSED_STATUSES):
+                continue
+            key = issue.get("key", "")
+            if not key:
+                continue
+            game = issue.get("game", "")
+            summary = issue.get("summary", "")
+            _add_notif(
+                f"critical_{key}", "bug", game,
+                "Critical", "red",
+                summary[:60] + ("…" if len(summary) > 60 else ""),
+            )
+    except Exception as ex:
+        print(f"[Notif] Critical 버그 알림 감지 오류: {ex}")
+
+
 # ── Schedule / Game Links (L590~1185) ─────────────────────────────────────────
 # [스케줄 헬퍼] _schedule_path, _compute_status, _fetch_game_titles
 # [게임 문서]   GET /api/game_titles  /api/game_lookup  /api/game_links  /api/game_studio
@@ -1167,13 +1204,13 @@ def _write_schedule(data: List[dict]) -> None:
             for e in data:
                 conn.execute("""
                     INSERT INTO schedules
-                    (id, game_name, type, assignee, qa_start, qa_end, tc_end,
+                    (id, game_name, type, assignee, qa_start, qa_end, tc_start, tc_end,
                      status, memo, created_at, qa_sheet_id, sheet_searched)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """, (
                     e["id"], e.get("game_name",""), e.get("type",""),
                     e.get("assignee",""), e.get("qa_start",""), e.get("qa_end",""),
-                    e.get("tc_end",""), e.get("status","active"), e.get("memo",""),
+                    e.get("tc_start",""), e.get("tc_end",""), e.get("status","active"), e.get("memo",""),
                     e.get("created_at",""), e.get("qa_sheet_id",""),
                     1 if e.get("sheet_searched") or e.get("_sheet_searched") else 0,
                 ))
@@ -1195,9 +1232,18 @@ def _compute_status(entry: dict, today: date) -> str:
         qa_end = date.fromisoformat(entry["qa_end"])
     except (KeyError, ValueError):
         return "active"
+    tc_start_str = entry.get("tc_start", "")
+    tc_start = date.fromisoformat(tc_start_str) if tc_start_str else None
     tc_end_str = entry.get("tc_end", "")
     tc_end = date.fromisoformat(tc_end_str) if tc_end_str else None
 
+    # tc_start가 qa_start보다 앞일 수 있으므로 먼저 체크
+    if tc_start and today >= tc_start:
+        if today > qa_end:
+            return "needs_action"
+        if not tc_end or today <= tc_end:
+            return "tc"
+        return "testing"
     if today < qa_start:
         return "pending"
     if today > qa_end:
@@ -1715,6 +1761,7 @@ class ScheduleEntry(BaseModel):
     assignee: str
     qa_start: str
     qa_end: str
+    tc_start: Optional[str] = ""
     tc_end: Optional[str] = ""
     status: str = "active"
     memo: Optional[str] = ""
@@ -1733,6 +1780,7 @@ async def api_schedule_post(body: ScheduleEntry):
         "assignee": body.assignee,
         "qa_start": body.qa_start,
         "qa_end": body.qa_end,
+        "tc_start": body.tc_start or "",
         "tc_end": body.tc_end or "",
         "status": body.status,
         "memo": body.memo or "",
@@ -1754,6 +1802,7 @@ class ScheduleUpdate(BaseModel):
     assignee: Optional[str] = None
     qa_start: Optional[str] = None
     qa_end: Optional[str] = None
+    tc_start: Optional[str] = None
     tc_end: Optional[str] = None
     status: Optional[str] = None
     memo: Optional[str] = None
@@ -1767,11 +1816,11 @@ async def api_schedule_put(entry_id: str, body: ScheduleUpdate):
         if e.get("id") == entry_id:
             old_status   = e.get("status", "")
             old_assignee = e.get("assignee", "")
-            old_dates    = {f: e.get(f, "") for f in ("qa_start", "qa_end", "tc_end")}
+            old_dates    = {f: e.get(f, "") for f in ("qa_start", "qa_end", "tc_start", "tc_end")}
             old_memo     = e.get("memo", "")
             game_name    = e.get("game_name", "")
 
-            for field in ("game_name", "type", "assignee", "qa_start", "qa_end", "tc_end", "status", "memo"):
+            for field in ("game_name", "type", "assignee", "qa_start", "qa_end", "tc_start", "tc_end", "status", "memo"):
                 val = getattr(body, field)
                 if val is not None:
                     e[field] = val
@@ -1788,7 +1837,7 @@ async def api_schedule_put(entry_id: str, body: ScheduleUpdate):
                 msg = f"{body.assignee}님으로 담당자가 지정됐어요" if body.assignee else "담당자가 변경됐어요"
                 _add_notif(f"assignee_{entry_id}_{body.assignee}", "status", game_name,
                            "담당자 변경", "blue", msg)
-            for f, label in (("qa_start", "QA 시작일"), ("qa_end", "QA 종료일"), ("tc_end", "TC 종료일")):
+            for f, label in (("qa_start", "QA 시작일"), ("qa_end", "QA 종료일"), ("tc_start", "TC 시작일"), ("tc_end", "TC 종료일")):
                 new_val = getattr(body, f)
                 if new_val is not None and new_val != old_dates[f]:
                     _add_notif(f"datechange_{entry_id}_{f}_{new_val}", "schedule", game_name,

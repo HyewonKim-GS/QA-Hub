@@ -548,6 +548,24 @@
       </div>
       <div class="sm-row">
         <div class="sm-field">
+          <label class="sm-lbl" data-i18n="sm.tcStart" data-i18n-ko="TC 시작일">TC 시작일</label>
+          <div style="position:relative;display:flex;align-items:center">
+            <input class="sm-inp" type="text" id="sm-tc-start" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-tc-start-picker').showPicker()"/>
+            <input type="date" id="sm-tc-start-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-tc-start').value=this.value;this.value='';"/>
+            <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-tc-start-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          </div>
+        </div>
+        <div class="sm-field">
+          <label class="sm-lbl" data-i18n="sm.tcEnd" data-i18n-ko="TC 완료일">TC 완료일</label>
+          <div style="position:relative;display:flex;align-items:center">
+            <input class="sm-inp" type="text" id="sm-tc-end" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-tc-end-picker').showPicker()"/>
+            <input type="date" id="sm-tc-end-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-tc-end').value=this.value;this.value='';"/>
+            <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-tc-end-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <div class="sm-row">
+        <div class="sm-field">
           <label class="sm-lbl" data-i18n="sm.qaStart" data-i18n-ko="QA 시작일">QA 시작일</label>
           <div style="position:relative;display:flex;align-items:center">
             <input class="sm-inp" type="text" id="sm-qa-start" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-qa-start-picker').showPicker()"/>
@@ -562,14 +580,6 @@
             <input type="date" id="sm-qa-end-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-qa-end').value=this.value;this.value='';"/>
             <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-qa-end-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
           </div>
-        </div>
-      </div>
-      <div class="sm-field">
-        <label class="sm-lbl"><span data-i18n="sm.tcEnd" data-i18n-ko="TC 작성 완료일">TC 작성 완료일</span> <span style="font-weight:400;color:var(--t3)" data-i18n="sm.optional" data-i18n-ko="(선택)">(선택)</span></label>
-        <div style="position:relative;display:flex;align-items:center">
-          <input class="sm-inp" type="text" id="sm-tc-end" placeholder="YYYY-MM-DD" maxlength="10" style="padding-right:32px" onclick="document.getElementById('sm-tc-end-picker').showPicker()"/>
-          <input type="date" id="sm-tc-end-picker" tabindex="-1" style="position:absolute;opacity:0;width:1px;height:1px;top:0;right:28px;overflow:hidden;pointer-events:none" onchange="document.getElementById('sm-tc-end').value=this.value;this.value='';"/>
-          <span style="position:absolute;right:8px;cursor:pointer;color:var(--t3);user-select:none;display:flex;align-items:center" onclick="document.getElementById('sm-tc-end-picker').showPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
         </div>
       </div>
       <div class="sm-field">
@@ -1489,7 +1499,8 @@ function _renderPanelBody(g, data, links, driveLoading){
       ];
     }
   }
-  if(_ghFiles.length){
+  const _GH_JACKPOT_URL='https://github.com/bagelcode-cvs/server/blob/Contents/develop/src/games.ts';
+  if(_ghFiles.length||true){
     b+=`<div><div class="pn-sec-lbl">${_PN_GITHUB}GitHub</div>`;
     _ghFiles.forEach(({label,path})=>{
       const url=`${_GH_REPO_BASE}/${_ghBranch}/${path}`;
@@ -1499,6 +1510,11 @@ function _renderPanelBody(g, data, links, driveLoading){
         <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.5" style="flex-shrink:0;opacity:0;transition:opacity .12s" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0"><path d="M2 12L12 2M12 2H7M12 2v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>`;
     });
+    b+=`<a class="jira-tk" href="${_GH_JACKPOT_URL}" target="_blank" rel="noopener" style="text-decoration:none;display:flex;align-items:center;gap:6px">
+      <span style="font-size:9px;font-weight:700;color:var(--t3);width:72px;flex-shrink:0">서버 잭팟 쿠도</span>
+      <span style="font-size:10px;font-family:monospace;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">src/games.ts</span>
+      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.5" style="flex-shrink:0;opacity:0;transition:opacity .12s" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0"><path d="M2 12L12 2M12 2H7M12 2v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>`;
     b+=`</div>`;
   }
 
@@ -1926,7 +1942,8 @@ async function renderCalendar(year,month){
         let label=displayName;
         if(dStr===entry.qa_start)label='▶ '+displayName;
         else if(dStr===entry.qa_end)label='■ '+displayName;
-        else if(entry.tc_end&&dStr===entry.tc_end)label='★ TC '+displayName;
+        else if(entry.tc_start&&dStr===entry.tc_start)label='◆ TC시작 '+displayName;
+        else if(entry.tc_end&&dStr===entry.tc_end)label='★ TC 완료 '+displayName;
         const eid=entry.id.replace(/'/g,"\\'");
         const memoTitle=entry.memo?shortName+' — '+entry.memo:shortName;
         evHtml+=`<div class="cal-event ${evCls}" onclick="event.stopPropagation();openSchedModal('${eid}')" title="${memoTitle}">${label}${entry.memo?'<span style="opacity:.6;margin-left:3px">📝</span>':''}</div>`;
@@ -2193,6 +2210,7 @@ async function openSchedModal(id){
       smSetAssignee(entry.assignee||'');
       document.getElementById('sm-qa-start').value=entry.qa_start||'';
       document.getElementById('sm-qa-end').value=entry.qa_end||'';
+      document.getElementById('sm-tc-start').value=entry.tc_start||'';
       document.getElementById('sm-tc-end').value=entry.tc_end||'';
       document.getElementById('sm-memo').value=entry.memo||'';
       _smStatus=entry.status||'active';
@@ -2202,6 +2220,7 @@ async function openSchedModal(id){
   }else{
     document.getElementById('sm-qa-start').value='';
     document.getElementById('sm-qa-end').value='';
+    document.getElementById('sm-tc-start').value='';
     document.getElementById('sm-tc-end').value='';
     document.getElementById('sm-memo').value='';
     smResetAssignee();
@@ -2244,6 +2263,7 @@ async function saveSchedule(){
   const gameType=(_smGameItems.find(g=>g.title===gameName)||{}).type||'';
   const qaStart=document.getElementById('sm-qa-start').value;
   const qaEnd=document.getElementById('sm-qa-end').value;
+  const tcStart=document.getElementById('sm-tc-start').value;
   const tcEnd=document.getElementById('sm-tc-end').value;
   const assignee=document.getElementById('sm-assignee').value;
   if(!gameName||!qaStart||!qaEnd){_toast(_tl('게임, QA 시작일, 마감일은 필수입니다.','Game, QA start date, and due date are required.'),'warn');return;}
@@ -2251,7 +2271,7 @@ async function saveSchedule(){
   btn.textContent=_tl('저장 중…','Saving…');btn.disabled=true;
   try{
     const memo=document.getElementById('sm-memo').value;
-    const body={game_name:gameName,type:gameType,assignee,qa_start:qaStart,qa_end:qaEnd,tc_end:tcEnd,status:_smStatus,memo};
+    const body={game_name:gameName,type:gameType,assignee,qa_start:qaStart,qa_end:qaEnd,tc_start:tcStart,tc_end:tcEnd,status:_smStatus,memo};
     const url=_smEditId?'/api/schedule/'+_smEditId:'/api/schedule';
     const method=_smEditId?'PUT':'POST';
     const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -2712,8 +2732,8 @@ async function loadGameIssuesList(){
 
   // 사이드바 렌더
   const _byStart=(a,b)=>(a.qa_start||'').localeCompare(b.qa_start||'');
-  const testing=schedule.filter(e=>e.computed_status==='testing'||e.computed_status==='needs_action').sort(_byStart);
-  const scheduled=schedule.filter(e=>e.computed_status!=='testing'&&e.computed_status!=='needs_action'&&e.computed_status!=='done').sort(_byStart);
+  const testing=schedule.filter(e=>['testing','extended','needs_action'].includes(e.computed_status)).sort(_byStart);
+  const scheduled=schedule.filter(e=>!['testing','extended','needs_action','done'].includes(e.computed_status)).sort(_byStart);
   const doneRecent=schedule.filter(e=>e.computed_status==='done'&&(e.qa_end||'')>=_weekStart).sort((a,b)=>(b.qa_end||'').localeCompare(a.qa_end||''));
 
   let sideHtml='';
@@ -2724,9 +2744,10 @@ async function loadGameIssuesList(){
       const isSB=e.game_name.startsWith('SB_')||e.type==='Super Bonus'||e.type==='SB';
       const safeKey=_giSafeKey(e.game_name);
       const _isLateItem=e.computed_status==='needs_action';
-      const _itemBadgeBg=_isLateItem?'var(--redbg)':'rgba(79,142,247,.12)';
-      const _itemBadgeColor=_isLateItem?'var(--red)':'#3b7ee8';
-      const _itemBadgeLbl=_isLateItem?_tl('⚠ 지연','⚠ Delayed'):_tl('테스트중','Testing');
+      const _isExtItem=e.computed_status==='extended';
+      const _itemBadgeBg=_isLateItem?'var(--redbg)':_isExtItem?'rgba(245,158,11,.12)':'rgba(79,142,247,.12)';
+      const _itemBadgeColor=_isLateItem?'var(--red)':_isExtItem?'#f59e0b':'#3b7ee8';
+      const _itemBadgeLbl=_isLateItem?_tl('⚠ 지연','⚠ Delayed'):_isExtItem?_tl('연장','Extended'):_tl('테스트중','Testing');
       sideHtml+=`<div class="gi-game-item" data-game="${e.game_name.replace(/"/g,'&quot;')}" onclick="giSelectGame('${safeKey}')"><div><div class="gi-game-name">${name}${isSB?' <span style="color:var(--t3);font-weight:400">(SB)</span>':''}</div><div class="gi-game-period">${e.assignee||''}</div></div><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:${_itemBadgeBg};color:${_itemBadgeColor}">${_itemBadgeLbl}</span></div>`;
     });
   }
